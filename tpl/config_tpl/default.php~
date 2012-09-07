@@ -1,0 +1,25 @@
+<?php
+    $this->data["HEADER"] = "Welcome";
+?>
+<p>When You're watching this page, it means, that tinyTpl was installed successfully. Congrats.</p>
+<p>This page is only shown, because you don't have any other pages yet and you didn't setup a MASTER_TEMPLATE yet. Read more about how to continue.</p>
+<ul>
+    <li><a href="/whatelse">Learn more, on what else you may do</a></li>
+    <li><a href="/howitworks">Learn how it works</a></li>
+    <li><a href="/halloffame">Browse the Hall of Fame</a></li>
+    <li><a href="/configurationscripts">Read about configuration scripts</a></li>
+    <li><a href="/internals">Read about internal workings</a></li>
+    <li><a href="/tinyExtended">learn to extend tinyTpl to your needs</a></li>
+    <li><a href="/moreAddons">Search the many different add-ons</a></li>
+</ul>
+<?php
+    /**
+     *
+     * Check sanity of filesystem
+     *
+    **/
+
+    $base = $this->base;
+
+    // if (  )
+?>
