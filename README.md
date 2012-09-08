@@ -1,7 +1,7 @@
 tinytpl
 =======
 
-![tinyTpl Logo](//github.com/derRaphael/tinytpl/blob/master/tpl/config_tpl/assets/img/128/tinyTpl.png)
+![tinyTpl Logo](//raw.github.com/derRaphael/tinytpl/master/tpl/config_tpl/assets/img/128/tinyTpl.png)
 
 tinyTpl is a small, robust and reliable templating engine for php5. It's
 published under the 3-clause-BSD licence.
