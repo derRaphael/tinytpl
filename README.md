@@ -11,7 +11,7 @@ Features of tinyTpl
 tinyTpl is a php5 only templating engine. It is highly configurable and
 allows almost anything to be finetuned to suit your needs.
 
-It comes with a simple to use admin interface. Here are some highlights:
+It comes with a easy to use admin interface. Here are some highlights:
 
  * Documentation and best usage documents,
  * statistic module which is independent of your providers/server's
@@ -70,12 +70,12 @@ The tinyStats module, gives you an insight of how your page is visited.
 
 Within the Hook-Manager you may en- or disable the features you need.
 
-![tinyTpl tinySourceview](//raw.github.com/derRaphael/tinytpl/master/artwork/doc/readme-sc/tiny-sourceview.png)
+![tinyTpl tinySourceview](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-sourceview.png)
 
 The sourceview is a simple helper which does as its name suggest. It lets
 you view the sourcecode.
 
-![tinyTpl tinySourceview](//raw.github.com/derRaphael/tinytpl/master/artwork/doc/readme-sc/tiny-error-overview.png)
+![tinyTpl tinySourceview](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-error-overview.png)
 
 This is an overview of the different error pages tinyTpl shows.
 
