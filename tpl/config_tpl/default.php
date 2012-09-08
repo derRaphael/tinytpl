@@ -22,5 +22,12 @@
             <li><a href="/tinyAdmin/doc/internals/extend/tiny">Extend tinyTpl</a></li>
         </ul>
     </div>
+
+    <div style="float:left;margin:1em;">
+        <h2>Teststuff</h2>
+        <ul>
+            <li><a href="/tinyAdmin/error_demo">tiny's error handling</a></li>
+        </ul>
+    </div>
 </div>
 <div class="clearfix"></div>

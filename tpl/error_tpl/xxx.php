@@ -22,6 +22,11 @@
         div.box p { font-size: 1.2em; text-shadow: 0 0 1em #aaa; }
         div.box hr { background: #444; color: #444; border: 0; height: 2px;  }
         div.box a { color: #f80;  }
+        /* Added Clearfix */
+        .clearfix:after { content: "."; display: block; clear: both; visibility: hidden; line-height: 0; height: 0; }
+        .clearfix { display: inline-block; }
+        html[xmlns] .clearfix { display: block; }
+        * html .clearfix { height: 1%; }
     </style>
 </head>
 <body>
@@ -31,7 +36,9 @@
         <h1>There was an unexpected error, sorry.</h1>
         <hr />
         <div style="position:absolute;bottom:3.5em;left:3.5em;right:3.5em;top:8.2em;width:auto;height:auto;">
+            <div style="position:absolute;top:0;left:0;bottom:0;right:0;overflow:auto;overflow-x:hidden;">
 {TINY_TPL_CONTENT}
+            </div>
         </div>
     </div>
 </div>
