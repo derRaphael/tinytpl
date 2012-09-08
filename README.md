@@ -42,14 +42,15 @@ variables. It includes an autoloader which loads files as required, this
 gives you the freedom to concentrate on the stuff that matters - your
 server logic.
 
-Overview of incorporated frameworks
------------------------------------
+Overview of well known incorporated frameworks
+----------------------------------------------
 
- * HTML5 Boilerplate (V 4)
- * jQuery 1.8.0
- * jQuery UI 1.8.23
- * RaphaelJS 2.0.2
- * g.Raphael 0.51
+ * [HTML5 Boilerplate (V 4)](http://html5boilerplate.com)
+ * [jQuery 1.8.0](http://jquery.com)
+ * [jQuery UI 1.8.23](http://jqueryui.com)
+ * [RaphaelJS 2.0.2](http://raphaeljs.com)
+ * [g.Raphael 0.51](http://g.raphaeljs.com)
+
 
 Licence
 =======
