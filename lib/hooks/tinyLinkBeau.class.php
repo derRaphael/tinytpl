@@ -4,7 +4,7 @@
  *
  * Copyright 2012 derRaphael <software@itholic.org>
  *
- * Version 0.1
+ * Version 0.1.1
  *
  * tinyLinkBeau shows how to enable hooks (observer pattern) with the
  * tinyTpl singleton object.
@@ -46,7 +46,7 @@ namespace tinyTpl\hooks
     {
         public $TARGETS = array( 'tinyTpl\tiny::html' );
 
-        const VERSION = "0.1";
+        const VERSION = "0.1.1";
 
         public function trigger( $TINY, $STAGE, $TARGET )
         {
@@ -55,7 +55,7 @@ namespace tinyTpl\hooks
                 case 255:
                     // Dump Header info
                     $html = $TINY->html;
-                    $html = preg_replace( '_(?<=\<a href\=")(/[^"?.]+)(?!\.(php|html|xml|js|css|json))(\?[^"]+)?(?=")_i', '\1.html\2', $html );
+                    $html = preg_replace( '_(?<=\<a href\="/)([^"?.]*[^/"?.])(?!\.(php|html|xml|js|css|json))(\?[^"]+)?(?=")_i', '\1.html\2', $html );
                     $TINY->html = $html;
                 break;
             }
@@ -75,7 +75,7 @@ namespace tinyTpl\hooks
     </span>
 
     <span class="x-version">
-        0.1
+        0.1.1
     </span>
 
     <span class="x-licence">
