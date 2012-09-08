@@ -10,7 +10,8 @@ Features of tinyTpl
 
 tinyTpl is a php5 only templating engine. It is highly configurable and
 allows almost anything to be finetuned to suit your needs.
-It comes with a simple admin interface. Here are some highlights:
+
+It comes with a simple to use admin interface. Here are some highlights:
 
  * Documentation and best usage documents,
  * statistic module which is independent of your providers/server's
@@ -55,29 +56,24 @@ Overview of well known incorporated frameworks
 Screenshots of tinyAdmin mode
 -----------------------------
 
-![tinyTpl tinyAdmin](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-admin-overview.png)
+![tinyTpl tinyAdmin](//raw.github.com/derRaphael/tinytpl/master/doc/readme-sc/tiny-admin-overview.png)
 
 This is the basic tinyAdmin menu, you'll see, once you initialized
 tinyAdmin with your password. From here, you may not only access the
 build in documentation, but the admin-only menu items, too.
 
-![tinyTpl tinyStats](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-stats.png)
+![tinyTpl tinyStats](//raw.github.com/derRaphael/tinytpl/master/doc/readme-sc/tiny-stats.png)
 
 The tinyStats module, gives you an insight of how your page is visited.
 
-![tinyTpl tinyHooks](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-hooks.png)
+![tinyTpl tinyHooks](//raw.github.com/derRaphael/tinytpl/master/doc/readme-sc/tiny-hooks.png)
 
 Within the Hook-Manager you may en- or disable the features you need.
 
-![tinyTpl tinySourceview](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-sourceview.png)
+![tinyTpl tinySourceview](//raw.github.com/derRaphael/tinytpl/master/doc/readme-sc/tiny-sourceview.png)
 
 The sourceview is a simple helper which does as its name suggest. It lets
 you view the sourcecode.
-
-![tinyTpl tinySourceview](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-error-overview.png)
-
-tiny's error handler in action. Here shown are plain code error, syntax (shutdown)
-error, exceptions, and a not found handling.
 
 Licence
 =======
