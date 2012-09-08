@@ -124,8 +124,11 @@ namespace tinyTpl
         // Safemode for Filename translations
         const TPL_NAME_SAFEMODE = true;
 
-        // Safemode for Filename translations
+        // Used when base templates are rendered
         const TINY_TEMPLATE_MODE = true;
+
+        // Used, when internal template calls are made
+        const TINY_IN_TEMPLATE_MODE = null;
 
         /*
          * Public static vars
@@ -749,7 +752,7 @@ namespace tinyTpl
             $this->notify_observer( __METHOD__, 0 );
 
             $this->action = $action;
-            $this->render_template( self::TINY_TEMPLATE_MODE, $safemode );
+            $this->render_template( self::TINY_IN_TEMPLATE_MODE, $safemode );
 
             $this->notify_observer( __METHOD__, 254 );
 
@@ -970,17 +973,26 @@ namespace tinyTpl
                 foreach( $data["trace"] as $set )
                 {
                     $col="#557";
-                    $a  = ( isset( $set["args"] ) ) ? '( <span style="color:#fff">'.$set["args"]."</span> );" : "";
+
+                    // Remove any path-type indication
+                    if ( isset( $set["args"] ) )
+                    {
+                        // Get last base pathtype;
+                        $base = basename( dirname( $_SERVER['DOCUMENT_ROOT'] ) ) . "/";
+                        $set["args"] = preg_replace( '_(?<=color\:#884;\"\>\').*?'.preg_quote($base,"_").'_', '.../', $set["args"] );
+                    }
+
+                    $a  = ( isset( $set["args"] ) ) ? '( <span class="tiny-exception-args" style="color:#fff">'.$set["args"]."</span> );" : "";
                     $f  = ( isset( $set["file"] ) ) ? basename( $set["file"] ) : "";
                     $l  = ( isset( $set["line"] ) ) ? $set["line"] : "";
                     $t  = ( isset( $set["type"] ) && $set["type"] != "type ( undefined )")
-                                ? '<span style="color:'.($col=$set["type"]=="->"?"#755":"#575").'">'.$set["type"] ."</span>"
+                                ? '<span class="tiny-exception-type" style="color:'.($col=$set["type"]=="->"?"#755":"#575").'">'.$set["type"] ."</span>"
                                 : "";
                     $fn = ( isset( $set["function"] ) )
-                                ? "<span style=\"color:$col\">".$set["function"] ."</span>"
+                                ? "<span class=\"tiny-exception-function\" style=\"color:$col\">".$set["function"] ."</span>"
                                 : "";
                     $c  = ( isset( $set["class"] ) && $set["class"] != "class ( undefined )")
-                                ? "<span style=\"color:$col\">".$set["class"] ."</span>"
+                                ? "<span class=\"tiny-exception-class\" style=\"color:$col\">".$set["class"] ."</span>"
                                 : "";
 
                     $TRACE .= '<div style="width:95%;margin:0;padding:0;margin-left:2em;">'.

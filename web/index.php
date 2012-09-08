@@ -52,7 +52,10 @@ namespace tinyTpl
 
 namespace
 {
-    try {
+    // The if below allows tinyTpl to show detailed exception information,
+    // but only when in development state
+    if ( !isset( \tinyTpl\config::$dev_state ) || \tinyTpl\config::$dev_state == "dev" )
+    {
 
         // That's all it takes. Just invoke the main tinyTpl class - fairly simple.
         require_once( dirname( $_SERVER["DOCUMENT_ROOT"] ) . "/lib/tiny.class.php" );
@@ -60,30 +63,37 @@ namespace
         // dump the result based on given master_tpl
         echo $tiny::sys()->html( "master_tpl" );
 
-    } catch ( Exception $e ) {
+    } else {
 
-        // FCGI Check for proper Header
-        if ( any_array_key_exists( array( "FCGI_ROLE","PHP_FCGI_CHILDREN","PHP_FCGI_MAX_REQUESTS" ), $_SERVER ) )
-        {
-            $header_prefix = "Status:";
+        try {
 
-        } else if ( array_key_exists('SERVER_PROTOCOL', $_SERVER) ) {
+            // That's all it takes. Just invoke the main tinyTpl class - fairly simple.
+            require_once( dirname( $_SERVER["DOCUMENT_ROOT"] ) . "/lib/tiny.class.php" );
 
-            $header_prefix = $_SERVER["SERVER_PROTOCOL"];
+            // dump the result based on given master_tpl
+            echo $tiny::sys()->html( "master_tpl" );
 
-        } else {
+        } catch ( Exception $e ) {
 
-            $header_prefix = "HTTP/1.0";
-        }
-        header( $header_prefix . " 500 Internal Server Error.", true, 500 );
+            // FCGI Check for proper Header
+            if ( any_array_key_exists( array( "FCGI_ROLE","PHP_FCGI_CHILDREN","PHP_FCGI_MAX_REQUESTS" ), $_SERVER ) )
+            {
+                $header_prefix = "Status:";
 
-        /*
-         * Dump a friendly error page, since we have an 500 Internal Server Error.
-         * It's hardcoded in here, for the case that everything else fails.
-         *
-         * When available (and working) tinyTpl attempts to show the buildin
-         * errorpages or even custom defined ones.
-         */
+            } else if ( array_key_exists('SERVER_PROTOCOL', $_SERVER) ) {
+
+                $header_prefix = $_SERVER["SERVER_PROTOCOL"];
+
+            } else {
+
+                $header_prefix = "HTTP/1.0";
+            }
+            header( $header_prefix . " 500 Internal Server Error.", true, 500 );
+
+            /*
+             * Dump a friendly error page, since we have an 500 Internal Server Error.
+             * It's hardcoded in here, for the case that everything else fails.
+             */
 ?>
 <!doctype html>
 <html lang="en">
@@ -133,6 +143,7 @@ namespace
 </html>
 <?php
 
-    } // End of Catch Exception
-}
+        } // End of Catch Exception
+    } // End of if
+} // End of namespace
 ?>
