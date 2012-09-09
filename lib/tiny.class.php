@@ -105,6 +105,17 @@ namespace tinyTpl
         // Flag for custom session engine usage
            ,   $use_session_engine  = false
 
+        // Override dev state
+        // It's a very very bad idea to change this variable from a tpl
+        //
+        // DO NOT RELY ON THIS AS THIS IS SUBJECT TO CHANGE IN FUTURE VERSIONS
+        // ALSO DO NOT USE THIS, AS THIS MAY BE A POTENTIAL SECURITY BREACH
+        //
+        // UNLESS YOU KNOW WHAT THIS MAY CAUSE: D O   N O T   C H A N G E !!!
+        // YOU HAVE BEEN WARNED!
+        //
+           ,   $dev_state_override  = null
+
         // Flag for development state - possible values:
         //      dev, stable
            ,   $dev_state  = "dev"
@@ -129,6 +140,9 @@ namespace tinyTpl
 
         // Used, when internal template calls are made
         const TINY_IN_TEMPLATE_MODE = null;
+
+        // Used, when internal template calls are made
+        const DEV_STATE_OVERRIDE = -1;
 
         /*
          * Public static vars
@@ -372,8 +386,10 @@ namespace tinyTpl
 
             } else {
 
-                ini_set('error_reporting', 0);
-                ini_set('display_errors', "off");
+                ini_set('error_reporting', -1);
+                // ini_set('error_reporting', 0); // def
+                // ini_set('display_errors', "off"); // def
+                ini_set('display_errors', "on");
             }
 
         }
@@ -562,11 +578,10 @@ namespace tinyTpl
             $this->MASTER_TEMPLATE = $MASTER_TEMPLATE;
             $MASTER_TEMPLATE_FILENAME = $this->default_master_tpl_dir . $this->MASTER_TEMPLATE;
 
-            if ( $this->dev_state === "dev" &&
+            if ( ( $this->dev_state === "dev" || self::DEV_STATE_OVERRIDE === $this->dev_state_override ) &&
                 ( ! file_exists( $this->template_dir . $MASTER_TEMPLATE_FILENAME . $this->tplExt )
                 || $this->args[0] == "tinyAdmin" )
             ) {
-
                 if ( $this->args[0] == "tinyAdmin" )
                 {
                     array_shift( $this->args );
@@ -856,6 +871,20 @@ namespace tinyTpl
             die( $STR );
         }
 
+        /*
+         *
+         * name: handle_shutdown
+         *
+         * Custom Shutdown Handler in case of a syntax error.
+         * Added in v0.2.2
+         *
+         * @param $CODE
+         * @param $MSG
+         * @param $FILE
+         * @param $LINE
+         * @return
+         *
+         */
         public static function handle_shutdown()
         {
             if ( self::sys()->dev_state === "dev" )
@@ -893,7 +922,7 @@ namespace tinyTpl
          */
         public static function handle_error( $CODE, $MSG, $FILE, $LINE )
         {
-            if ( self::sys()->dev_state == "stable" )
+            if ( self::sys()->dev_state == "stable" && isset( self::sys()->isAjax ) && self::sys()->isAjax !== true )
             {
                 $template_dir  = dirname( $_SERVER["DOCUMENT_ROOT"] ) . self::sys()->default_tpl_dir;
 
@@ -923,6 +952,30 @@ namespace tinyTpl
 
             }
 
+            if ( isset( self::sys()->isAjax ) && self::sys()->isAjax == true )
+            {
+                // We're responding to an ajax call. Do something.
+                if ( self::sys()->dev_state == "stable" )
+                {
+                    // Only set header in stable mode, otherwise debug information wont be displayed properly
+                    // under some curcumstances
+                    $header_prefix = self::get_proper_header();
+                    header( $header_prefix . " 500 Internal Server Error.", true, 500 );
+                    $result = array("A server error occured. That's all we know.");
+
+                } else {
+                    $result = array(
+                        "file" => basename( $FILE ),
+                        "line" => $LINE,
+                        "msg" => $MSG,
+                        "code" => $CODE
+                    );
+                }
+                // dump the error message
+                self::dump_ajax_error( $result );
+                die();
+            }
+
             $MSG = preg_replace( '/\s*?\[<.*?>\]\:/', ':<br/>&nbsp;&nbsp;&nbsp;<b style="color:#fff;margin:0;padding:0;margin-left: 2em;">', $MSG ) . "</b>";
             $FILE = basename( $FILE );
             $RES =  "<h3 style=\"color:#f00;\">Code $CODE Error</h3>".
@@ -931,6 +984,34 @@ namespace tinyTpl
 
             die ( self::sys()->failsafe_render( $RES, true ) );
 
+        }
+
+        /*
+         *
+         * name: dump_ajax_error
+         *
+         * Dumps an ajax error and makes differences between json and pure javascript
+         * When in javascript mode it tries to make use of console.log and alert otherwise
+         *
+         * Added in v0.2.2
+         *
+         * @return string
+         *
+         */
+        public static function dump_ajax_error( $results = array( "An error occured. That's all we know." ) )
+        {
+            if ( isset( self::sys()->isAjax ) && self::sys()->isAjax == true )
+            {
+                // We're ajax and JSON dump given result in proper format.
+                if ( array_key_exists('HTTP_ACCEPT', $_SERVER) && preg_match( '_json_i', $_SERVER['HTTP_ACCEPT'] ) )
+                {
+                    header("Content-type: application/json", true);
+                    die( json_encode( $results ) );
+                }
+
+                header("Content-type: text/javascript", true);
+                die( 'eval( ( window.console && console.log ? "console.log" : "alert" ) + "('.json_encode($results).');" )' );
+            }
         }
 
         /*
@@ -947,18 +1028,7 @@ namespace tinyTpl
         public static function handle_exception( $ex )
         {
             // FCGI Check for proper Header
-            if ( any_array_key_exists( array( "FCGI_ROLE","PHP_FCGI_CHILDREN","PHP_FCGI_MAX_REQUESTS" ), $_SERVER ) )
-            {
-                $header_prefix = "Status:";
-
-            } else if ( array_key_exists('SERVER_PROTOCOL', $_SERVER) ) {
-
-                $header_prefix = $_SERVER["SERVER_PROTOCOL"];
-
-            } else {
-
-                $header_prefix = "HTTP/1.0";
-            }
+            $header_prefix = self::get_proper_header();
             header( $header_prefix . " 500 Internal Server Error.", true, 500 );
 
             try
@@ -995,8 +1065,8 @@ namespace tinyTpl
                                 ? "<span class=\"tiny-exception-class\" style=\"color:$col\">".$set["class"] ."</span>"
                                 : "";
 
-                    $TRACE .= '<div style="width:95%;margin:0;padding:0;margin-left:2em;">'.
-                              '<div style="float:left;margin:0;padding:0;color:#666">'."$f</div>".
+                    $TRACE .= "<div style=\"width:95%;margin:0;padding:0;margin-left:2em;\">".
+                              "<div style=\"float:left;margin:0;padding:0;color:#666\">$f</div>".
                               "<div style=\"float:right;margin:0;padding:0;color:#444\">Line $l</div></div>".
                               "<div style=\"width:100%;margin:0;padding:0;margin-bottom:.3em;margin-left:2.5em;clear:both;\">$c$t$fn $a</div>";
                 }
@@ -1117,6 +1187,34 @@ namespace tinyTpl
             }
 
             return $type;
+        }
+
+        /*
+         *
+         * name: get_proper_header
+         *
+         * Returns neccessary header info for error response
+         * Added in v0.2.2
+         *
+         * @return string
+         *
+         */
+        public static function get_proper_header()
+        {
+            // FCGI Check for proper Header
+            if ( any_array_key_exists( array( "FCGI_ROLE","PHP_FCGI_CHILDREN","PHP_FCGI_MAX_REQUESTS" ), $_SERVER ) )
+            {
+                $header_prefix = "Status:";
+
+            } else if ( array_key_exists('SERVER_PROTOCOL', $_SERVER) ) {
+
+                $header_prefix = $_SERVER["SERVER_PROTOCOL"];
+
+            } else {
+
+                $header_prefix = "HTTP/1.0";
+            }
+            return $header_prefix;
         }
 
         /*******************************************************************

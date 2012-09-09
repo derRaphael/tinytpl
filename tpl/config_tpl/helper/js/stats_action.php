@@ -36,7 +36,21 @@ $('.stats_menu a.stats-show-all').click(function(e){
 
 });
 
-
+$('a.global-access-toggle').click(function(e){
+    e.preventDefault();
+    $.ajax({
+        url: "/tinyAdmin/stats",
+        type: "POST",
+        dataType: "json",
+        data: {
+            value: "toggle"
+        },
+        success: function(d,t,j){
+            $('p.global-toggle span').text(d[1]);
+            $('p.global-toggle a').text(d[2]);
+        }
+    })
+})
 
 var _availableDates = <?=json_encode($logFacility->getValidDaysFolderList())?>;
 window.availableDates = _availableDates;
@@ -67,7 +81,7 @@ $('.stats-select-date').click(function(e){
             $(".raphael_stats_holder").remove();
 
             $.ajax({
-                url: "/tinyAdmin/admin/stats",
+                url: "/tinyAdmin/stats",
                 type: "POST",
                 dataType: "script",
                 data: {

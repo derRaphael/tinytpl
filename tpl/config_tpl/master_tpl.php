@@ -24,7 +24,7 @@
     </div>
     <div id="body">
         <div id="inner-body" class="box">
-            <div style="background: url(/special/img/64/tinyTpl.png) no-repeat 5px -8px; min-height: 48px; *height: 48px; padding-left: 80px;">
+            <div style="background: url(/tinyAdmin/special/img/64/tinyTpl.png) no-repeat 5px -8px; min-height: 48px; *height: 48px; padding-left: 80px;">
                 <h1>tinyTpl<?=(isset($this->data["HEADER"])?" - ".$this->data["HEADER"]:"");?></h1>
             </div>
             <hr />

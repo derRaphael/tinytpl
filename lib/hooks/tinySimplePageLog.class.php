@@ -4,7 +4,7 @@
  *
  * Copyright 2012 derRaphael <software@itholic.org>
  *
- * Version 0.1.5
+ * Version 0.1.6
  *
  * tinyPageLog shows how to enable hooks (observer pattern) with the
  * tinyTpl singleton object.
@@ -51,13 +51,28 @@ namespace tinyTpl\hooks
     {
         public $TARGETS = array( 'tinyTpl\tiny::html', 'tinyTpl\tiny::use_template' );
 
-        const VERSION = "0.1.5";
+        const VERSION = "0.1.6";
 
         public function trigger( $TINY, $STAGE, $TARGET )
         {
             switch ( $STAGE )
             {
                 case 0:
+                    // Check for global access only when accessing the stats page of tinyAdmin
+                    if ( $TARGET == 'tinyTpl\tiny::html'
+                      && count( $TINY->args ) == 2
+                      && $TINY->args[0] == "tinyAdmin"
+                      && $TINY->args[1] == "stats"
+                      && $TINY->dev_state == "stable"
+                      && file_exists( $TINY->base . "/cache/stats.data" )
+                    ) {
+                        // This overrides tiny's defined development state.
+                        // Which allows to use this particular function from a
+                        // potentially deactivated tinyAdmin menu.
+                        $TINY->dev_state_override = \tinyTpl\tiny::DEV_STATE_OVERRIDE;
+
+                    }
+
                     if ( $TARGET == 'tinyTpl\tiny::html' )
                     {
                         $TINY->SIMPLELOG['REQUEST'] = $_SERVER["REQUEST_URI"];
@@ -70,6 +85,7 @@ namespace tinyTpl\hooks
                         $TINY->SIMPLELOG['TYPE']    = $TINY->method;
                         $TINY->SIMPLELOG['TPL']     = array();
                     }
+
                     break;
                 case 254:
                     if ( $TARGET == 'tinyTpl\tiny::use_template' )
@@ -78,8 +94,8 @@ namespace tinyTpl\hooks
                     }
                     break;
                 case 255:
-                    if ( $TARGET == 'tinyTpl\tiny::html' )
-                    {
+                    if ( $TARGET == 'tinyTpl\tiny::html'
+                    ) {
                         // Set the used master template
                         $TINY->SIMPLELOG['MASTER']  = $TINY->MASTER_TEMPLATE;
 
@@ -123,12 +139,22 @@ namespace tinyTpl\hooks
                             fclose($fp);
 
                         }
-                        // die( "<pre>" . print_r( array( $TINY->SIMPLELOG, $line ), true ) );
                     }
                     break;
             }
         }
 
+        /*
+         *
+         * name: getValidDaysFolderList
+         *
+         * This function enlists all available subfolder containing stats data
+         *
+         * @param $basedir
+         *
+         * @return array
+         *
+         */
         public function getValidDaysFolderList( $basedir = null )
         {
             if ( $basedir == null )
@@ -153,6 +179,19 @@ namespace tinyTpl\hooks
             return array();
         }
 
+        /*
+         *
+         * name: buildDaylyStats
+         *
+         * This function builds reads a log set by a given date
+         *
+         * @param $given_year
+         * @param $given_month
+         * @param $given_day
+         *
+         * @return array
+         *
+         */
         public function readDataByDate( $given_year = null, $given_month = null, $given_day = null )
         {
             // cache directory
@@ -181,6 +220,19 @@ namespace tinyTpl\hooks
 
         }
 
+        /*
+         *
+         * name: buildDaylyStats
+         *
+         * This function builds stats by a given date
+         *
+         * @param $given_year
+         * @param $given_month
+         * @param $given_day
+         *
+         * @return array
+         *
+         */
         public function buildDaylyStats( $given_year = null, $given_month = null, $given_day = null )
         {
             $day = is_null( $given_day) ? date("d") : $given_day;
@@ -304,9 +356,19 @@ namespace tinyTpl\hooks
             );
         }
 
-        // Taken from http://www.geekpedia.com/code47_Detect-operating-system-from-user-agent-string.html
-        // by Kevin F. on Friday, February 11th 2011 at 05:57 PM
-        // RegexSimplifications by derRaphael
+        /*
+         *
+         * name: detectOS
+         *
+         * Taken from http://www.geekpedia.com/code47_Detect-operating-system-from-user-agent-string.html
+         * by Kevin F. on Friday, February 11th 2011 at 05:57 PM
+         *
+         * RegexSimplifications by derRaphael
+         *
+         * @param
+         * @return string
+         *
+         */
         public function detectOS()
         {
             // Oslist is from
@@ -413,10 +475,17 @@ namespace tinyTpl\hooks
 
         }
 
-
-        // Taken from http://www.php.net/manual/de/function.get-browser.php#101125
-        // by ruudrp at live dot nl
-
+        /*
+         *
+         * name: getBrowser
+         *
+         * Taken from http://www.php.net/manual/de/function.get-browser.php#101125
+         * by ruudrp at live dot nl
+         *
+         * @param
+         * @return array
+         *
+         */
         public function getBrowser()
         {
             $u_agent = $_SERVER['HTTP_USER_AGENT'];
@@ -514,7 +583,7 @@ namespace tinyTpl\hooks
     </span>
 
     <span class="x-version">
-        0.1.5
+        0.1.6
     </span>
 
     <span class="x-licence">

@@ -1,5 +1,39 @@
 <?php
 
+    $fn = $this->base . "/cache/stats.data";
+
+    if ( ( isset($_SESSION['tinyadmin_is_logged_in']) && $_SESSION['tinyadmin_is_logged_in'] === true )
+      || file_exists( $fn )
+    ) {
+        /**
+         * All good, we're either tinyadmin or configured to grant access to this file.
+        **/
+        // Handle POST requests to en- or disable public access for this file.
+        if ( isset($_SESSION['tinyadmin_is_logged_in'])
+          && $_SESSION['tinyadmin_is_logged_in'] === true
+          && $this->method=="POST"
+          && array_key_exists( "value", $_POST )
+          && preg_match( '_^toggle$_', $_POST["value"] )
+        ) {
+            if ( file_exists( $fn ) && is_writable( $fn ) )
+            {
+                unlink( $fn );
+                $msg = '["Global access revoked","You may configure stats to grant global access.","Click here, to grant access"]';
+            } else {
+                file_put_contents( $fn, "stats" );
+                $msg = '["Global access granted","Currently stats has been configured to grant global access.","Click here, to revoke access"]';
+            }
+            die( $msg );
+        }
+
+    } else {
+        /**
+         * Since none of the mentioned conditions is met, we redirect to site's entry
+        **/
+        header('Location: /');
+        die();
+    }
+
     $loggingHookEnabled = false;
 
     foreach( $this->_store as $ObjectIndex => $Object )
@@ -69,7 +103,12 @@
         die();
     }
 
-    $this->data["HEADER"] = "AdminMode";
+    if ( isset($_SESSION['tinyadmin_is_logged_in']) && $_SESSION['tinyadmin_is_logged_in'] === true )
+    {
+        $this->data["HEADER"] = "AdminMode (".$_SERVER['SERVER_NAME'].")";
+    } else {
+        $this->data["HEADER"] = "Stats for ".$_SERVER['SERVER_NAME'];
+    }
 
 ?>
 
@@ -100,6 +139,12 @@
 
 <h2>tinySimplePageLog for <a href="#" class="stats-select-date"><?=date('d.m.Y')?></a><input type="hidden" name="date" /></h2>
 <p class="no-print">This module shows some very basic usage statistics. Click on the date to select a specific day.</p>
+
+<?php if ( isset($_SESSION['tinyadmin_is_logged_in']) && $_SESSION['tinyadmin_is_logged_in'] === true && file_exists( $fn ) ): ?>
+<p class="global-toggle no-print"><span>Currently stats has been configured to grant global access.</span> <a href="#" class="global-access-toggle">Click here, to revoke access</a></p>
+<?php elseif ( isset($_SESSION['tinyadmin_is_logged_in']) && $_SESSION['tinyadmin_is_logged_in'] === true && ! file_exists( $fn ) ): ?>
+<p class="global-toggle no-print"><span>You may configure stats to grant global access.</span> <a href="#" class="global-access-toggle">Click here, to grant access</a></p>
+<?php endif; ?>
 
 <div id="stats_holder"></div>
 

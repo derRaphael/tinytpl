@@ -147,7 +147,7 @@ $('.login-dlg').dialog({
             // do a sanitycheck and delegate if it makes sense
             if ( isset($_SESSION['tinyadmin_is_logged_in']) && $_SESSION['tinyadmin_is_logged_in'] === true )
             {
-                if ( preg_match( '_^(cache|stats|checks|hooks|pass|source)$_', $this->args[1] ) )
+                if ( preg_match( '_^(cache|checks|hooks|pass|source)$_', $this->args[1] ) )
                 {
 
                     echo tpl( implode( "/", $this->args ) );

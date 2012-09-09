@@ -27,7 +27,7 @@
 
 <?=trigger_tpl( "js_adminmode_btn", "helper/js/logged_in" )?>
 
-<?php else: ?>
+<?php elseif( $this->dev_state === "dev" ): ?>
             <div class="left"><button name="login-btn">Enable Adminmode</button></div>
 
 <?=trigger_tpl( "js_adminmode_btn", "helper/js/not_logged_in" )?>
