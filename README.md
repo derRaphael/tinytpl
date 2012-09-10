@@ -11,7 +11,7 @@ Features of tinyTpl
 tinyTpl is a php5 only templating engine. It is highly configurable and
 allows almost anything to be finetuned to suit your needs.
 
-It comes with a easy to use admin interface. Here are some highlights:
+It comes with an easy to use admin interface. Here are some highlights:
 
  * Documentation and best usage documents,
  * statistic module which is independent of your providers/server's
@@ -24,7 +24,8 @@ It comes with a easy to use admin interface. Here are some highlights:
  * checking filesystem and permissions where tinyTpl resides, so it gives
    you hints where you may optimize your application and set proper
    rights in your filesystem,
- * tinyAdmin allows to view your sourcecode which allows to spot errors
+ * tinyAdmin allows to view your sourcecode which allows to spot errors,
+ * configuration-files for nginx/lighttpd webserver
 
 tinyTpl comes with a lightweight on-the-fly css and javascript minifier,
 and a set of plugins, which extend it's own functionality.
