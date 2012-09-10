@@ -39,6 +39,8 @@ $('.g-raphael-version').text('0.51');
 
 <?=chk_tpl_trigger( 'js_source' )?>
 
+<?=chk_tpl_trigger( 'js_versioncheck' )?>
+
 <?php
     $data = ob_get_contents();
     ob_end_clean();

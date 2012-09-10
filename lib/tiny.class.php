@@ -4,7 +4,7 @@
  *
  * Copyright 2012 derRaphael <software@itholic.org>
  *
- * Version 0.2.2
+ * Version 0.2.3
  *
  * Tiny aims to be a small fast and reliable templating engine.
  *
@@ -124,7 +124,7 @@ namespace tinyTpl
         /*
          * Class Constants
          */
-        const VERSION = "0.2.2";
+        const VERSION = "0.2.3";
 
         // Standard Master Template
         const MASTER_TEMPLATE = "master_tpl";
