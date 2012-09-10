@@ -376,6 +376,14 @@ table.hookinfo {
     color: #002;
 }
 
+.tiny-extra-info.warning {
+    background: #ff8 url(/tinyAdmin/special/img/128/dialog-important-2.png) no-repeat 26px 2em;
+}
+
+.tiny-extra-info.tiny-logo {
+    background: #ff8 url(/tinyAdmin/special/img/128/tinyTpl.png) no-repeat 26px 2em;
+}
+
 .tiny-extra-info.error {
     border: 1px solid #800;
     background: #f88 url(/tinyAdmin/special/img/128/dialog-cancel-5.png) no-repeat 26px 2em;

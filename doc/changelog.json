@@ -4,6 +4,6 @@
         "minor": 2,
         "sub":   3
     },
-    "0-2-3": "official release. includes various fixups and an update checker for easier future checks.",
-    "0-2-2": "pre release candidate"
+    "0-2-3": "Official initial release. This version includes various fixups and an update checker for easier future checks.",
+    "0-2-2": "pre Release Candidate"
 }

@@ -11,6 +11,7 @@
             <li><a href="/tinyAdmin/doc/misc/firststeps">First steps in a tiny world</a></li>
             <li><a href="/tinyAdmin/doc/misc/howitworks">How tiny works</a></li>
             <li><a href="/tinyAdmin/doc/misc/credits">Credits</a></li>
+            <li><a href="/tinyAdmin/versioncheck">Check for new version</a></li>
         </ul>
     </div>
 

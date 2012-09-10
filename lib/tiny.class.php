@@ -1037,6 +1037,37 @@ namespace tinyTpl
             $header_prefix = self::get_proper_header();
             header( $header_prefix . " 500 Internal Server Error.", true, 500 );
 
+            if ( isset( self::sys()->isAjax ) && self::sys()->isAjax == true )
+            {
+                // We're responding to an ajax call. Do something.
+                if ( self::sys()->dev_state == "stable" )
+                {
+                    // Only set header in stable mode, otherwise debug information wont be displayed properly
+                    // under some curcumstances
+                    $header_prefix = self::get_proper_header();
+                    header( $header_prefix . " 500 Internal Server Error.", true, 500 );
+                    $result = array("A server error occured. That's all we know.");
+
+                } else {
+
+                    $data  = self::sys()->trace_dump_exception( $ex );
+
+                    $FILE  = basename( $data["file"] );
+                    $LINE  = $data["line"];
+                    $MSG   = $data["msg"];
+
+                    $result = array(
+                        "file" => $FILE,
+                        "line" => $LINE,
+                        "msg" => $MSG,
+                        "code" => print_r( $data['trace'][0], true )
+                    );
+                }
+                // dump the error message
+                self::dump_ajax_error( $result );
+                die();
+            }
+
             try
             {
                 $data  = self::sys()->trace_dump_exception( $ex );
