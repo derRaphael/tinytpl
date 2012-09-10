@@ -171,7 +171,7 @@ namespace tinyTpl\hooks
 
                 foreach($ite as $path){
                     if ( $path->isDir() && preg_match( '_(?<=\/log/)(\d+)\/(\d+)\/(\d+)_', $path->getPathname(), $m ) ) {
-                        $log[] =  str_replace( '0', '', $m[3] ). "-" . str_replace( '0', '', $m[2] ). "-" . $m[1];
+                        $log[] =  preg_replace( '_(.*)?(?<=\/log/)(\d+)\/0?(\d+)\/0?(\d+)_', "\\4-\\3-\\2", $path->getPathname() );
                     }
                 }
                 return $log;
