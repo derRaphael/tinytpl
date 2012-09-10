@@ -582,6 +582,12 @@ namespace tinyTpl
                 ( ! file_exists( $this->template_dir . $MASTER_TEMPLATE_FILENAME . $this->tplExt )
                 || $this->args[0] == "tinyAdmin" )
             ) {
+                if ( $this->args[0] != "tinyAdmin" )
+                {
+                    header('Location: /tinyAdmin/default.html');
+                    die();
+                }
+
                 if ( $this->args[0] == "tinyAdmin" )
                 {
                     array_shift( $this->args );
@@ -1010,7 +1016,7 @@ namespace tinyTpl
                 }
 
                 header("Content-type: text/javascript", true);
-                die( 'eval( ( window.console && console.log ? "console.log" : "alert" ) + "('.json_encode($results).');" )' );
+                die( 'eval( ( window.console && console.log ? "console.log" : "alert" ) + "('.addslashes( json_encode($results) ).');" )' );
             }
         }
 
@@ -1409,6 +1415,7 @@ namespace tinyTpl
             {
                 if ( in_array( $TARGET, $Observer->TARGETS ) )
                 {
+                    // echo "<!-- \n\tTARGET:   " . $TARGET . "\n\tSTAGE:    " . $STAGE . "\n\tOBSERVER: " . get_class($Observer) . "\n-->\n";
                     $Observer->trigger( $this, $STAGE, $TARGET );
                 }
             }

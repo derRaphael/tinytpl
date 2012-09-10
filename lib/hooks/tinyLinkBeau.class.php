@@ -53,10 +53,16 @@ namespace tinyTpl\hooks
             switch ( $STAGE )
             {
                 case 255:
-                    // Dump Header info
+
+                    // Grab HTML
                     $html = $TINY->html;
-                    $html = preg_replace( '_(?<=\<a href\="/)([^"?.]*[^/"?.])(?!\.(php|html|xml|js|css|json))(\?[^"]+)?(?=")_i', '\1.html\2', $html );
+
+                    // Beautify link
+                    $html = preg_replace( '_(?<=\<a href\=")(/[^"?.]*[^/"?.])(?!\.(php|html|xml|js|css|json))(\?[^"]+)?(?=")_i', '\1.html\2', $html );
+
+                    // store html
                     $TINY->html = $html;
+
                 break;
             }
         }

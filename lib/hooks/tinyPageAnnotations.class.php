@@ -47,14 +47,15 @@ namespace tinyTpl\hooks
         public $TARGETS = array(
                     'tinyTpl\tiny::__init',
                     'tinyTpl\tiny::html',
-                );
+                ),
+               $CF = "";
 
         const VERSION = "0.1";
 
         private function __customConstruct( \tinyTpl\tiny $TINY )
         {
 
-            if ( array_key_exists('tinyadmin_is_logged_in',$_SESSION) && $_SESSION['tinyadmin_is_logged_in'] == true )
+            if ( is_array( $_SESSION ) && array_key_exists('tinyadmin_is_logged_in',$_SESSION) && $_SESSION['tinyadmin_is_logged_in'] == true )
             {
                 $CF  = $TINY->base . "/cache";
                 $this->CF  = "$CF/annotations";
@@ -72,6 +73,14 @@ namespace tinyTpl\hooks
 
         }
 
+        public function __customDeactivate()
+        {
+        }
+
+        public function __customActivate()
+        {
+        }
+
         public function trigger( $TINY, $STAGE, $TARGET )
         {
 
@@ -81,11 +90,13 @@ namespace tinyTpl\hooks
 
                     if ( $TARGET == 'tinyTpl\tiny::__init' )
                     {
+
                         $this->__customConstruct( $TINY );
                     }
                     else if ( $TARGET == 'tinyTpl\tiny::html' )
                     {
-                        // $this->renderAnnotations( $TINY );
+
+                        $this->renderAnnotations( $TINY );
                     }
                     break;
             }
@@ -94,38 +105,75 @@ namespace tinyTpl\hooks
 
         public function renderAnnotations( \tinyTpl\tiny $TINY )
         {
-            if ( array_key_exists('tinyadmin_is_logged_in',$_SESSION) && $_SESSION['tinyadmin_is_logged_in'] == true )
+            if ( is_array( $_SESSION ) && array_key_exists('tinyadmin_is_logged_in',$_SESSION) && $_SESSION['tinyadmin_is_logged_in'] == true )
             {
-                $URI = preg_replace( '_\?.*_', '', $_SERVER['REQUEST_URI'] );
-                $TINY->DATA['ANNOTATIONS'] = array();
 
+                $URI = preg_replace( '_\?.*|/$|^/_', '', $_SERVER['REQUEST_URI'] );
+                $URI = preg_replace( '_\W_', '-', $URI );
 
-                if ( file_exists( $this->CF . "/$URI" ) && is_readable( $this->CF . "/$URI" ) )
+                if ( $URI == "" )
+                {
+                    $URI = $TINY->default_template;
+                }
+
+                $TINY->DATA['ANNOTATIONS'] = new \stdClass();
+                $TINY->DATA['ANNOTATION']  = array(
+                    'PAGEID' => base64_encode( $URI )
+                );
+
+                if ( isset( $this->CF ) && file_exists( $this->CF . "/$URI" ) && is_readable( $this->CF . "/$URI" ) )
                 {
                     $TINY->DATA['ANNOTATIONS'] = $this->loadAnnotation( $this->CF . "/$URI" );
                 }
 
-                $this->script = $TINY->read_template( $TINY->base . "/tpl/config_tpl/helper/js/anno_js.php", false );
-                $TINY->html = preg_replace( '_</head>_i', "\n\t\t<link rel=\"stylesheet\" href=\"/tinyAdmin/special/css/jquery.stickynotes.css\">\n</head>", $TINY->html );
-                $TINY->html = preg_replace( '_</body>_i', "\n" . $this->script . "\n</body>", $TINY->html );
+                // Grab script from templates
+                ob_start();
+                include( $TINY->base . "/tpl/config_tpl/helper/js/anno_js.php" );
+                $this->script = ob_get_contents();
+                ob_end_clean();
+
+                // Inject template into document stream, regardless of any trigger
+                //
+                // ATTENTION !!
+                //
+                // In order to work, the injected script expects jquery and jquery ui to be already loaded.
+                // Allthough it checks their presence, it wont attempt to load missing parts by itself,
+                // in such case, it simply refuses to render.
+                //
+                $html = $TINY->html;
+                $html = preg_replace( '_</body>_i', "\n" . $this->script . "\n</body>", $html );
+                $TINY->html = $html;
             }
         }
 
         private function loadAnnotation( $file )
         {
-            return json_decode( file_get_contents( $file ), true );
+            $data = json_decode( file_get_contents( $file ), false );
+
+            if ($data == null)
+            {
+                $data = new \stdClass();
+            }
+
+            return $data;
         }
 
-        public function saveAnnotation( $anno )
+        public function saveAnnotation( $DATA, $URI )
         {
-            if ( array_key_exists('tinyadmin_is_logged_in',$_SESSION)
+            if ( is_array( $_SESSION )
+              && array_key_exists('tinyadmin_is_logged_in',$_SESSION)
               && $_SESSION['tinyadmin_is_logged_in'] == true
+              && isset( $this->CF )
               && file_exists( $this->CF )
               && is_writeable( $this->CF )
             ) {
-                $URI = preg_replace( '_\?.*_', '', $_SERVER['REQUEST_URI'] );
-                $DATA = json_encode( $anno );
-                file_put_contents( $this->CF . "/$URI", $DATA );
+
+                if ( $URI == "" )
+                {
+                    $URI = $TINY->default_template;
+                }
+
+                file_put_contents( $this->CF . "/$URI", json_encode( $DATA ) );
             }
         }
     }
@@ -142,7 +190,7 @@ namespace tinyTpl\hooks
     </span>
 
     <span class="x-version">
-        0.1 Alpha (Not usable)
+        0.1.3
     </span>
 
     <span class="x-licence">
