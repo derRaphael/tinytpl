@@ -79,6 +79,12 @@ you view the sourcecode.
 
 This is an overview of the different error pages tinyTpl shows.
 
+![tinyTpl tinySourceview](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tinyPageAnnotation.png)
+
+tinyPageAnnotation allows you to add annotations to any page within your
+sets. It is only accessible when logged in as admin - so regular visitors
+won't see your private notes for a page.
+
 Licence
 =======
 
