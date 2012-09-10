@@ -5,6 +5,10 @@
 tinyTpl is a small, robust and reliable templating engine for php5. It's
 published under the 3-clause-BSD licence.
 
+Current stable version is 0.2.3
+
+* * *
+
 Features of tinyTpl
 -------------------
 
@@ -30,6 +34,8 @@ It comes with an easy to use admin interface. Here are some highlights:
 tinyTpl comes with a lightweight on-the-fly css and javascript minifier,
 and a set of plugins, which extend it's own functionality.
 
+* * *
+
 Technically spoken
 ------------------
 
@@ -45,6 +51,8 @@ existing variables.
 It includes an autoloader which loads files as required, this gives you
 the freedom to concentrate on the stuff that matters - your server logic.
 
+* * *
+
 Overview of well known incorporated frameworks
 ----------------------------------------------
 
@@ -53,6 +61,8 @@ Overview of well known incorporated frameworks
  * [jQuery UI 1.8.23](http://jqueryui.com)
  * [RaphaelJS 2.0.2](http://raphaeljs.com)
  * [g.Raphael 0.51](http://g.raphaeljs.com)
+
+* * *
 
 Screenshots of tinyAdmin mode
 -----------------------------
@@ -86,6 +96,20 @@ tinyPageAnnotation allows you to add annotations to any page within your
 sets. It is only accessible when logged in as admin - so regular visitors
 won't see your private notes for a page.
 
+* * *
+
+Changelog
+=========
+
+v0-2-3
+------
+Official initial release. This version includes various fixups and an update checker for easier future checks.
+
+v0-2-2
+------
+pre Release Candidate
+
+
 Licence
 =======
 
@@ -93,7 +117,7 @@ Licence
 
     Copyright 2012 derRaphael
 
-    Version 0.2.2
+    Version 0.2.3
 
     Tiny aims to be a small fast and reliable templating engine.
 
