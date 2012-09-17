@@ -48,4 +48,5 @@ $('.g-raphael-version').text('0.51');
 <?=mini_js( $data, array("use_cache"=>false) )?>
 
 });
+
 </script>

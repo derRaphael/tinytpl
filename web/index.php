@@ -46,7 +46,8 @@ namespace tinyTpl
     class config
     {
         public static
-            $dev_state = "dev";
+            $dev_state = "dev",
+            $db_options = array();
     }
 }
 
@@ -61,7 +62,7 @@ namespace
         require_once( dirname( $_SERVER["DOCUMENT_ROOT"] ) . "/lib/tiny.class.php" );
 
         // dump the result based on given master_tpl
-        echo $tiny::sys()->html( "master_tpl" );
+        echo $tiny::sys()->html( "master_tpl" )->html;
 
     } else {
 
@@ -71,7 +72,7 @@ namespace
             require_once( dirname( $_SERVER["DOCUMENT_ROOT"] ) . "/lib/tiny.class.php" );
 
             // dump the result based on given master_tpl
-            echo $tiny::sys()->html( "master_tpl" );
+            echo $tiny::sys()->html( "master_tpl" )->html;
 
         } catch ( Exception $e ) {
 

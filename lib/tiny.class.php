@@ -4,7 +4,7 @@
  *
  * Copyright 2012 derRaphael <software@itholic.org>
  *
- * Version 0.2.3
+ * Version 0.2.4
  *
  * Tiny aims to be a small fast and reliable templating engine.
  *
@@ -124,7 +124,7 @@ namespace tinyTpl
         /*
          * Class Constants
          */
-        const VERSION = "0.2.3";
+        const VERSION = "0.2.4";
 
         // Standard Master Template
         const MASTER_TEMPLATE = "master_tpl";
@@ -239,9 +239,6 @@ namespace tinyTpl
 
                 // Extend include path
                 set_include_path( join( PATH_SEPARATOR, $include_dir ) );
-
-                // Register default extension
-                spl_autoload_extensions('.php');
 
                 // Register new autoloader
                 spl_autoload_register( array(self::$sys,"__autoload") );
@@ -386,10 +383,8 @@ namespace tinyTpl
 
             } else {
 
-                ini_set('error_reporting', -1);
-                // ini_set('error_reporting', 0); // def
-                // ini_set('display_errors', "off"); // def
-                ini_set('display_errors', "on");
+                ini_set('error_reporting', 0);
+                ini_set('display_errors', "off");
             }
 
         }
@@ -450,7 +445,19 @@ namespace tinyTpl
          */
         public function __autoload( $class )
         {
-            require_once $class . ".class.php";
+            $class = preg_replace( '_.*'.preg_quote('\\').'_', '', $class );
+
+            // Build default extension array
+            $ext = array( '.php', '.class.php' );
+
+            foreach( $ext as $suffix )
+            {
+                if ( stream_resolve_include_path($class.$suffix) !== false )
+                {
+                    require_once $class.$suffix;
+                    break;
+                }
+            }
         }
 
         /*
@@ -652,7 +659,7 @@ namespace tinyTpl
 
             $this->notify_observer( __METHOD__, 255 );
 
-            return $this->html;
+            return $this; //->html;
         }
 
         /*
@@ -845,6 +852,8 @@ namespace tinyTpl
         {
             $this->MASTER_TEMPLATE = null;
 
+            $this->html = "";
+
             if ( $TINY_DATA == "" )
             {
                 $TINY_DATA = "<p>There's something broken. That's all we know.</p>\n";
@@ -899,6 +908,8 @@ namespace tinyTpl
 
                 if($error !== NULL){
 
+                    self::sys()->html = "";
+
                     $MSG = preg_replace( '/\s*?\[<.*?>\]\:/', ':<br/>&nbsp;&nbsp;&nbsp;<b style="color:#fff;margin:0;padding:0;margin-left: 2em;">', $error['message'] ) . "</b>";
                     $FILE = basename( $error['file'] );
                     $LINE = $error['line'];
@@ -928,6 +939,8 @@ namespace tinyTpl
          */
         public static function handle_error( $CODE, $MSG, $FILE, $LINE )
         {
+            self::sys()->html = "";
+
             if ( self::sys()->dev_state == "stable" && isset( self::sys()->isAjax ) && self::sys()->isAjax !== true )
             {
                 $template_dir  = dirname( $_SERVER["DOCUMENT_ROOT"] ) . self::sys()->default_tpl_dir;
@@ -1033,6 +1046,8 @@ namespace tinyTpl
          */
         public static function handle_exception( $ex )
         {
+            self::sys()->html = "";
+
             // FCGI Check for proper Header
             $header_prefix = self::get_proper_header();
             header( $header_prefix . " 500 Internal Server Error.", true, 500 );
@@ -1446,7 +1461,6 @@ namespace tinyTpl
             {
                 if ( in_array( $TARGET, $Observer->TARGETS ) )
                 {
-                    // echo "<!-- \n\tTARGET:   " . $TARGET . "\n\tSTAGE:    " . $STAGE . "\n\tOBSERVER: " . get_class($Observer) . "\n-->\n";
                     $Observer->trigger( $this, $STAGE, $TARGET );
                 }
             }
@@ -1590,7 +1604,7 @@ namespace
      */
     function chk_tpl_trigger( $TINY_TRIGGER, $DEFAULT = null )
     {
-        echo tiny::sys()->chk_tpl_trigger( $TINY_TRIGGER, $DEFAULT );
+        return tiny::sys()->chk_tpl_trigger( $TINY_TRIGGER, $DEFAULT );
     }
 
     /*
@@ -1656,6 +1670,29 @@ namespace
         return false;
     }
 
+    /*
+     *
+     * name: all_array_keys_exist
+     * Checks if all keys of a given array collection exist in a different array
+     * Added in v0.2.3
+     *
+     * @param $keys
+     * @param $array
+     * @return bool
+     *
+     */
+    function all_array_keys_exist( $keys = array(), $array )
+    {
+        foreach( $keys as $key )
+        {
+            if ( ! array_key_exists( $key, $array ) )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     /***********************************************************************
      *                    Compressor primitives
@@ -1696,6 +1733,11 @@ namespace
         foreach( $defaults as $key => $value )
         {
             ${$key} = $options[ $key ];
+        }
+
+        if ( ! is_dir( tiny::sys()->base . "/cache/" ) && ! is_writeable( tiny::sys()->base . "/cache/" ) )
+        {
+            $use_cache = false;
         }
 
         if ( $is_json === false && $use_cache == true )
@@ -1758,7 +1800,7 @@ namespace
      * Uses an external library if availble
      * Added in v0.2
      *
-     * @param $js
+     * @param $data
      * @param $options
      * @return string
      *
@@ -1779,6 +1821,11 @@ namespace
             $options = $defaults;
         }
 
+        if ( ! is_dir( tiny::sys()->base . "/cache/" ) && ! is_writeable( tiny::sys()->base . "/cache/" ) )
+        {
+            $use_cache = false;
+        }
+
         foreach( $defaults as $key => $value )
         {
             ${$key} = $options[ $key ];
@@ -1795,8 +1842,11 @@ namespace
             }
         }
 
-        $min = Minifier::minify($data, array('flaggedComments' => false));
-
+        try {
+            $min = Minifier::minify($data, array('flaggedComments' => false));
+        } catch ( Exception $e ) {
+            $min = $data;
+        }
 
         if ( $show_stats == true )
         {

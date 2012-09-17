@@ -9,7 +9,14 @@
         if ( preg_match( '_\.js_i', $filename ) )
         {
             $cType = "text/javascript; charset=utf-8";
-            $data = mini_js( file_get_contents( $filename ) );
+
+            // Dont minify already minfied files.
+            if ( ! preg_match( '_min_i', $filename ) )
+            {
+                $data = mini_js( file_get_contents( $filename ) );
+            } else {
+                $data = file_get_contents( $filename );
+            }
         }
         else if ( preg_match( '_\.css$_i', $filename ) )
         {

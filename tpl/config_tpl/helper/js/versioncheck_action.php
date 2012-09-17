@@ -3,7 +3,7 @@
 var localVersion = {
     major: <?=preg_replace('_\..*_','',self::VERSION)?>,
     minor: <?=preg_replace('_^.*?\.|\..*_','',self::VERSION)?>,
-    sub: 2 /*<?=preg_replace('_^.*\._','',self::VERSION)?>*/
+    sub: <?=preg_replace('_^.*\._','',self::VERSION)?>
 }
 
 var checkChangeLog = function(event){
