@@ -126,7 +126,7 @@ Licence
 
     Copyright 2012 derRaphael
 
-    Version 0.2.3
+    Version 0.2.4
 
     Tiny aims to be a small fast and reliable templating engine.
 
