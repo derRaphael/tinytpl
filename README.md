@@ -5,7 +5,7 @@
 tinyTpl is a small, robust and reliable templating engine for php5. It's
 published under the 3-clause-BSD licence.
 
-Current stable version is 0.2.3
+Current stable version is 0.2.4
 
 * * *
 
@@ -100,6 +100,15 @@ won't see your private notes for a page.
 
 Changelog
 =========
+
+v0-2-4
+------
+* Fixed bug in tinySimpleLog's getValidDaysFolderList()
+* Fixed behaviour in special.php so minified js wont be minified again
+* Fixed mini_css and mini_js functions to check for accessible cache folder
+* Fixed autoloader to support less static naming conventions
+* Catching Exceptions of JS Minifier
+* Added tinyMongo and its hook to invoke mongoDb by triggering a custom hook
 
 v0-2-3
 ------
