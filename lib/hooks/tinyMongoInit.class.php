@@ -64,7 +64,7 @@ namespace tinyTpl\hooks
 
                     if ( $TARGET == 'tinyTpl\tiny::__init' )
                     {
-                        $TINY->mongo = new \tinyTpl\db\tinyMongo( $db_options );
+                        \tinyTpl\tiny::sys()->mongo = new \tinyTpl\db\tinyMongo( $db_options );
                     }
                     break;
             }

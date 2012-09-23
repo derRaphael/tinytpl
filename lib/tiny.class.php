@@ -722,6 +722,10 @@ namespace tinyTpl
 
                 }
 
+            } else if( ! is_readable ( $TEMPLATE_FILENAME  ) && $TEMPLATE_MODE !== self::TINY_TEMPLATE_MODE ) {
+
+                $this->html = "";
+
             }
 
             $this->notify_observer( __METHOD__, 255 );
@@ -780,6 +784,7 @@ namespace tinyTpl
             $this->notify_observer( __METHOD__, 0 );
 
             $this->action = $action;
+
             $this->render_template( self::TINY_IN_TEMPLATE_MODE, $safemode );
 
             $this->notify_observer( __METHOD__, 254 );
@@ -822,7 +827,7 @@ namespace tinyTpl
          */
         final public function chk_tpl_trigger( $TINY_TRIGGER, $DEFAULT = null )
         {
-            if ( is_array( $this->template_trigger_collection ) && array_key_exists( $TINY_TRIGGER, $this->template_trigger_collection ) )
+            if ( isset( $this->template_trigger_collection ) && is_array( $this->template_trigger_collection ) && array_key_exists( $TINY_TRIGGER, $this->template_trigger_collection ) )
             {
                 return $this->use_template( $this->template_trigger_collection[$TINY_TRIGGER] )->html;
 
@@ -917,6 +922,29 @@ namespace tinyTpl
                             "<p>$MSG</p>".
                             "<p>File: <b style=\"color:white\">$FILE</b> in line <b style=\"color:white\">$LINE</b></p>";
 
+                    if ( isset( self::sys()->isAjax ) && self::sys()->isAjax == true )
+                    {
+                        // We're responding to an ajax call. Do something.
+                        if ( self::sys()->dev_state == "stable" )
+                        {
+                            // Only set header in stable mode, otherwise debug information wont be displayed properly
+                            // under some curcumstances
+                            $header_prefix = self::get_proper_header();
+                            header( $header_prefix . " 500 Internal Server Error.", true, 500 );
+                            $result = array("A server error occured. That's all we know.");
+
+                        } else {
+                            $result = array(
+                                "file" => basename( $FILE ),
+                                "line" => $LINE,
+                                "msg" => $MSG,
+                                "code" => "UNRECOVERABLE CODE ERROR"
+                            );
+                        }
+                        // dump the error message
+                        self::dump_ajax_error( $result );
+                        die();
+                    }
                     die ( self::sys()->failsafe_render( $RES, true ) );
                 }
             }
@@ -1029,7 +1057,20 @@ namespace tinyTpl
                 }
 
                 header("Content-type: text/javascript", true);
-                die( 'eval( ( window.console && console.log ? "console.log" : "alert" ) + "('.addslashes( json_encode($results) ).');" )' );
+
+                $tiny500 = 'var tiny500 = function(message){this.name="tinyError #500 [Internal Server Error]"; this.message=message;}; tiny500.prototype = new Error();';
+                if ( all_array_keys_exist( array('code','file','line','msg'), $results ) )
+                {
+                    // Beautify Msg
+                    $err_msg = '"Code '.$results["code"].' in File \"'.$results["file"].'\" - '.$results["msg"].' in line '.$results["line"].'"';
+                } else {
+                    // Dump ugly Error
+                    $err_msg = '"'.preg_replace( '_\s+_', ' ', str_replace( array("\n","\t"), array('\n','\t'), print_r($results,true) ) ).'"';
+                }
+                $js_timeout = 'setTimeout(function(){'.$tiny500.'throw new tiny500('.$err_msg.')},100)';
+
+                // Timeout is neccssary to run in a different context to trick any try catch mechanisms
+                die( $js_timeout );
             }
         }
 
@@ -1141,7 +1182,7 @@ namespace tinyTpl
          *
          * name: trace_dump_exception
          *
-         * Dumps trace od Exception
+         * Dumps trace of Exception
          * Added in v0.1
          *
          * @param mixed var
@@ -1209,7 +1250,7 @@ namespace tinyTpl
          *
          * name: get_type_of_var
          *
-         * Starts a session
+         * Returns type of a given Variable
          * Added in v0.1
          *
          * @param mixed var
@@ -1693,6 +1734,28 @@ namespace
         return true;
     }
 
+    /*
+     *
+     * name: all_array_keyvalues_notempty
+     * Checks if all values of a given array exists and are not empty in a different array
+     * Added in v0.2.4
+     *
+     * @param $keys
+     * @param $array
+     * @return bool
+     *
+     */
+    function all_array_keyvalues_notempty( $keys = array(), $array )
+    {
+        foreach( $keys as $key )
+        {
+            if ( ! array_key_exists( $key, $array ) || trim( $array[$key] ) == "" )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /***********************************************************************
      *                    Compressor primitives

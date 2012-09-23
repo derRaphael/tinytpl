@@ -108,12 +108,15 @@
 
     foreach( $reg as $observerHook )
     {
-        preg_match( '_(?<=/\*\* ABSTRACT:).*(?=\*\*/)_sm', file_get_contents( $observerHook[0] ), $match );
+        if ( file_exists( $observerHook[0] ) && is_readable( $observerHook[0] ) )
+        {
+            preg_match( '_(?<=/\*\* ABSTRACT:).*(?=\*\*/)_sm', file_get_contents( $observerHook[0] ), $match );
 
-        $hooks[ basename( $observerHook[0] ) ] = array(
-            "info" => $match[0],
-            "enabled" => ( preg_match( '_\.php$_', basename( $observerHook[0] ) ) ? true : false )
-        );
+            $hooks[ basename( $observerHook[0] ) ] = array(
+                "info" => $match[0],
+                "enabled" => ( preg_match( '_\.php$_', basename( $observerHook[0] ) ) ? true : false )
+            );
+        }
     }
 
 ?>

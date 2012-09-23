@@ -34,20 +34,20 @@
 
 namespace tinyTpl\db
 {
-	/**
-	 * tinyMongo
-	 *
-	 * Interface for accessing the Database. This class includes a few
+    /**
+     * tinyMongo
+     *
+     * Interface for accessing the Database. This class includes a few
      * basic methods for working with mongodb
-	 *
-	**/
+     *
+    **/
 
-	class tinyMongo
-	{
+    class tinyMongo
+    {
 
-		public $connection;
-		public $collection;
-		public $db;
+        public $connection;
+        public $collection;
+        public $db;
 
         /*
          *
@@ -56,22 +56,22 @@ namespace tinyTpl\db
          * @return
          *
          */
-		public function __construct( $options = array() )
-		{
-			$defaults = array(
-				"host"              => "localhost:27017",
-				"database"          => null,
+        public function __construct( $options = array() )
+        {
+            $defaults = array(
+                "host"              => "localhost:27017",
+                "database"          => null,
                 "connectionOptions" => array( 'persistent' => "tiny" )
-			);
+            );
 
-			foreach( array_merge( $defaults, $options ) as $key => $value )
-			{
-				${$key} = $value;
-			}
+            foreach( array_merge( $defaults, $options ) as $key => $value )
+            {
+                ${$key} = $value;
+            }
 
-			$this->connection = new \Mongo( $host, $connectionOptions );
-			$this->init( $database );
-		}
+            $this->connection = new \Mongo( $host, $connectionOptions );
+            $this->init( $database );
+        }
 
         /*
          *
@@ -80,19 +80,19 @@ namespace tinyTpl\db
          * @return
          *
          */
-		public function init( $database = null )
-		{
-			if ( $database == null )
-			{
-				$database = "tinyTpl";
+        public function init( $database = null )
+        {
+            if ( $database == null )
+            {
+                $database = "tinyTpl";
 
-			} else if ( ! is_string( $database ) ) {
+            } else if ( ! is_string( $database ) ) {
 
-				throw new \Exception( "Is no valid MongoDB name. Was Expecting String.", 100 );
-			}
+                throw new \Exception( "Is no valid MongoDB name. Was Expecting String.", 100 );
+            }
 
-			$this->setDatabase( $database );
-		}
+            return $this->setDatabase( $database );
+        }
 
         /*
          *
@@ -101,10 +101,11 @@ namespace tinyTpl\db
          * @return
          *
          */
-		public function setDatabase( $database )
-		{
-			$this->db = $this->connection->selectDB( $database );
-		}
+        public function setDatabase( $database )
+        {
+            $this->db = $this->connection->selectDB( $database );
+            return $this->db;
+        }
 
         /*
          *
@@ -113,10 +114,11 @@ namespace tinyTpl\db
          * @return
          *
          */
-		public function setCollection($collection)
-		{
-			$this->db->selectCollection($collection);
-		}
+        public function setCollection( $collection )
+        {
+            $this->collection = $this->db->selectCollection( $collection );
+            return $this->collection;
+        }
 
         /*
          *
@@ -125,10 +127,10 @@ namespace tinyTpl\db
          * @return
          *
          */
-		public function insert($dataset)
-		{
-			$this->collection->insert($dataset);
-		}
+        public function insert($dataset, $options = array() )
+        {
+            return $this->collection->insert($dataset, $options);
+        }
 
         /*
          *
@@ -137,33 +139,45 @@ namespace tinyTpl\db
          * @return
          *
          */
-		public function save($dataset)
-		{
-			$this->collection->save($dataset);
-		}
+        public function save($dataset, $options = array() )
+        {
+            return $this->collection->save($dataset,$options);
+        }
 
         /*
          *
          * name: find
          * @param $citeria
-         * @return
+         * @return MongoCursor
          *
          */
-		public function find( $criteria )
-		{
-			$cursor = $this->collection->find( $criteria );
+        public function find( $query = array(), $fields = array() )
+        {
+            return $this->collection->find( $query, $fields );
+        }
 
-			$result = array();
-			$index  = 0;
+        /*
+         *
+         * name: findAll
+         * @param $citeria
+         * @return array
+         *
+         */
+        public function findAll( $query = array(), $fields = array() )
+        {
+            $cursor = $this->find( $query, $fields );
 
-			while( $cursor->hasNext())
-			{
-				$result[$index] = $cursor->getNext();
-				$index++;
-			}
+            $result = array();
+            $index  = 0;
 
-			return $result;
-		}
+            while( $cursor->hasNext())
+            {
+                $result[$index] = $cursor->getNext();
+                $index++;
+            }
+
+            return $result;
+        }
 
         /*
          *
@@ -172,17 +186,17 @@ namespace tinyTpl\db
          * @return
          *
          */
-		public function findById( $id )
-		{
+        public function findById( $id )
+        {
             if ( ! is_string( $id ) )
             {
-                $id = new MongoId( $id );
+                $id = new \MongoId( $id );
             }
 
             $criteria = array( '_id' => $id );
 
-			return $this->findOne( $criteria );
-		}
+            return $this->findOne( $criteria );
+        }
 
         /*
          *
@@ -191,10 +205,10 @@ namespace tinyTpl\db
          * @return
          *
          */
-		public function findOne( $criteria=array() )
-		{
-			return $this->collection->findOne( $criteria );
-		}
+        public function findOne( $query=array(), $fields=array() )
+        {
+            return $this->collection->findOne( $query, $fields );
+        }
 
         /*
          *
@@ -205,10 +219,10 @@ namespace tinyTpl\db
          * @return
          *
          */
-		public function update( $criteria, $values, $options=array() )
-		{
-			$this->collection->update( $criteria, $values, $options );
-		}
+        public function update( $criteria, $new_object, $options=array() )
+        {
+            return $this->collection->update( $criteria, $new_object, $options );
+        }
 
         /*
          *
@@ -218,11 +232,11 @@ namespace tinyTpl\db
          * @return $data
          *
          */
-		public function delete( $criteria, $one = false )
-		{
-			$data = $this->collection->remove( $criteria, $one );
-			return $data;
-		}
+        public function delete( $criteria, $one = false )
+        {
+            $data = $this->collection->remove( $criteria, $one );
+            return $data;
+        }
 
         /*
          *
@@ -231,11 +245,11 @@ namespace tinyTpl\db
          * @return
          *
          */
-		public function ensureIndex( $args )
-		{
-			return $this->collection->ensureIndex( $args );
-		}
+        public function ensureIndex( $args )
+        {
+            return $this->collection->ensureIndex( $args );
+        }
 
-	}
+    }
 }
 ?>

@@ -5,7 +5,7 @@
 tinyTpl is a small, robust and reliable templating engine for php5. It's
 published under the 3-clause-BSD licence.
 
-Current stable version is 0.2.4
+Current stable version is 0.2.5
 
 * * *
 
@@ -100,6 +100,16 @@ won't see your private notes for a page.
 
 Changelog
 =========
+
+v0-2-5
+------
+* Fixed bug in non-existent template handling
+* Changed behaviour of tinyMongo and it's init hook
+* Fixed tpltrigger undefined variable handler
+* Improved tiny's ajax error dump to throw a customized Error into console
+* Fixed lazy typo in source documentation
+* Fixed filenotfound error in hooks.php
+* Added php cli script to create nginx config file and bash script to sanitize ownerships of tiny core folders
 
 v0-2-4
 ------
