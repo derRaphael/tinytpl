@@ -4,6 +4,7 @@
         "minor": 2,
         "sub":   5
     },
+    "0-2-6": "Fixed annoying bug in tinyLinkBeau to work properly with fragments and get-parameters"
     "0-2-5": "Fixed bug in non-existent template handling<br>Changed behaviour of tinyMongo and it's init hook<br>Fixed tpltrigger undefined variable handler<br>Improved tiny's ajax error dump to throw a customized Error into console<br>Fixed lazy typo in source documentation<br>Fixed filenotfound error in hooks.php<br>Added php cli script to create nginx config file and bash script to sanitize ownerships of tiny core folders",
     "0-2-4": "Fixed bug in tinySimpleLog's getValidDaysFolderList()<br>Fixed behaviour in special.php so minified js wont be minified again<br>Fixed mini_* functions to check for accessible cache folder<br>Fixed autoloader to support less static naming conventions<br>Catching Exceptions of JS Minifier<br>Added tinyMongo and its hook to invoke mongoDb by triggering a custom hook",
     "0-2-3": "Official initial release.<br>This version includes various fixups and an updatechecker for easier future checks.<br>",

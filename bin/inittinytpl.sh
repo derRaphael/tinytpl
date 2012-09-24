@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #  inittinytpl.sh
-#  v0.1
+#  v0.1.1
 #
 #  Copyright 2012 derRaphael <software@itholic.org>
 #
@@ -156,6 +156,9 @@ find ./ -type d -exec chmod u+rwx,g+rs,g-w,o-rwx {} \;
 
 # Second we set global rights for cache folder
 find ./cache -type d -exec chmod g+rws {} \;
+
+# refine webserver as owner for cache
+chown $WWW_SVR:$WWW_SVR "$CWD/cache"
 
 # Add our user to our group.
 if [[ "$(id $WWW_USR)" != *"$WWW_SVR"* ]]; then
