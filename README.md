@@ -1,5 +1,5 @@
 
-![tinyTpl Logo](//raw.github.com/derRaphael/tinytpl/master/tpl/config_tpl/assets/img/128/tinyTpl.png) tinytpl
+![tinyTpl Logo](https://raw.github.com/derRaphael/tinytpl/master/tpl/config_tpl/assets/img/128/tinyTpl.png) tinytpl
 =============================================================================================================
 
 tinyTpl is a small, robust and reliable templating engine for php5. It's
@@ -67,30 +67,30 @@ Overview of well known incorporated frameworks
 Screenshots of tinyAdmin mode
 -----------------------------
 
-![tinyTpl tinyAdmin](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-admin-overview.png)
+![tinyTpl tinyAdmin](https://raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-admin-overview.png)
 
 This is the basic tinyAdmin menu, you'll see, once you initialized
 tinyAdmin with your password. From here, you may not only access the
 build in documentation, but the admin-only menu items, too.
 
-![tinyTpl tinyStats](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-stats.png)
+![tinyTpl tinyStats](https://raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-stats.png)
 
 The tinyStats module, gives you an insight of how your page is visited.
 
-![tinyTpl tinyHooks](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-hooks.png)
+![tinyTpl tinyHooks](https://raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-hooks.png)
 
 Within the Hook-Manager you may en- or disable the features you need.
 
-![tinyTpl tinySourceview](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-sourceview.png)
+![tinyTpl tinySourceview](https://raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-sourceview.png)
 
 The sourceview is a simple helper which does as its name suggest. It lets
 you view the sourcecode.
 
-![tinyTpl tinySourceview](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-error-overview.png)
+![tinyTpl tinySourceview](https://raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tiny-error-overview.png)
 
 This is an overview of the different error pages tinyTpl shows.
 
-![tinyTpl tinySourceview](//raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tinyPageAnnotation.png)
+![tinyTpl tinySourceview](https://raw.github.com/derRaphael/tinytpl/master/doc/artwork/readme-sc/tinyPageAnnotation.png)
 
 tinyPageAnnotation allows you to add annotations to any page within your
 sets. It is only accessible when logged in as admin - so regular visitors
