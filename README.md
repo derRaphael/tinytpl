@@ -134,7 +134,7 @@ Licence
 
     tinyTpl
 
-    Copyright 2012 derRaphael
+    Copyright 2013 derRaphael
 
     Tiny aims to be a small fast and reliable templating engine.
 
