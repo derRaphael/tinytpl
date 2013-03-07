@@ -609,7 +609,10 @@ namespace tinyTpl
                         "tpl500" => "500",
                         "tplXXX" => "xxx",
                         "default_tpl_logic_dir" => "/tplLogic/",
-                        "default_master_tpl_dir" => "master_tpl/",
+                        // Set default master template dir to empty string, since
+                        // rendering will stop working properly when a master template
+                        // has been defined elsewhere.
+                        "default_master_tpl_dir" => "",
                         "default_error_tpl_dir" => "error_tpl/",
                         "default_template" => "default",
                         "TINY_TPL_CONTENT_PLACEHOLDER" => "{TINY_TPL_CONTENT}"

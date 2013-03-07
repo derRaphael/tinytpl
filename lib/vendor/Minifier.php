@@ -39,10 +39,10 @@
  * @copyright  2009-2012 Robert Hafner <tedivm@tedivm.com>
  * @license    http://www.opensource.org/licenses/bsd-license.php  BSD License
  * @link       https://github.com/tedivm/JShrink
- * @version    Release: 0.4
+ * @version    Release: 0.5.1
  */
 
- //namespace JShrink;
+ namespace JShrink;
 
 /**
  * Minifier
@@ -51,7 +51,6 @@
  * Usage - Minifier::minify($js, $options);
  * Usage - Minifier::minify($js, array('flaggedComments' => false));
  *
- * @version 0.4
  * @package JShrink
  * @author  Robert Hafner <tedivm@tedivm.com>
  * @license http://www.opensource.org/licenses/bsd-license.php  BSD License
@@ -66,7 +65,8 @@ class Minifier
     protected $input;
 
     /**
-     * The location of the character (in the input string) that is next to be processed.
+     * The location of the character (in the input string) that is next to be
+     * processed.
      *
      * @var int
      */
@@ -102,22 +102,25 @@ class Minifier
     protected $options;
 
     /**
-     * Contains the default options for minification. This array is merged with the one passed in by the user to create
-     * the request specific set of options (stored in the $options attribute).
+     * Contains the default options for minification. This array is merged with
+     * the one passed in by the user to create the request specific set of
+     * options (stored in the $options attribute).
      *
      * @var array
      */
     static protected $defaultOptions = array('flaggedComments' => true);
 
     /**
-     * Contains a copy of the JShrink object used to run minification. This is only used internally, and is only stored
-     * for performance reasons. There is no internal data shared between minification requests.
+     * Contains a copy of the JShrink object used to run minification. This is
+     * only used internally, and is only stored for performance reasons. There
+     * is no internal data shared between minification requests.
      */
     static protected $jshrink;
 
     /**
-     * Minifier::minify takes a string containing javascript and removes unneeded characters in order to shrink the code
-     * without altering it's functionality.
+     * Minifier::minify takes a string containing javascript and removes
+     * unneeded characters in order to shrink the code without altering it's
+     * functionality.
      */
     static public function minify($js, $options = array())
     {
@@ -141,7 +144,8 @@ class Minifier
     }
 
     /**
-     * Processes a javascript string and outputs only the required characters, stripping out all unneeded characters.
+     * Processes a javascript string and outputs only the required characters,
+     * stripping out all unneeded characters.
      *
      * @param string $js The raw javascript to be minified
      * @param array $currentOptions Various runtime options in an associative array
@@ -159,8 +163,9 @@ class Minifier
 
         $this->a = $this->getReal();
 
-        // the only time the length can be higher than 1 is if a conditional comment needs to be displayed
-        // and the only time that can happen for $a is on the very first run
+        // the only time the length can be higher than 1 is if a conditional
+        // comment needs to be displayed and the only time that can happen for
+        // $a is on the very first run
         while(strlen($this->a) > 1)
         {
             echo $this->a;
@@ -172,7 +177,8 @@ class Minifier
         while($this->a !== false && !is_null($this->a) && $this->a !== '')
         {
 
-            // now we give $b the same check for conditional comments we gave $a before we began looping
+            // now we give $b the same check for conditional comments we gave $a
+            // before we began looping
             if(strlen($this->b) > 1)
             {
                 echo $this->a . $this->b;
@@ -185,7 +191,8 @@ class Minifier
             {
                 // new lines
                 case "\n":
-                    // if the next line is something that can't stand alone preserve the newline
+                    // if the next line is something that can't stand alone
+                    // preserve the newline
                     if(strpos('(-+{[@', $this->b) !== false)
                     {
                         echo $this->a;
@@ -280,9 +287,10 @@ class Minifier
     }
 
     /**
-     * This function gets the next "real" character. It is essentially a wrapper around the getChar function that skips
-     * comments. This has signifigant peformance benefits as the skipping is done using native functions (ie, c code)
-     * rather than in script php.
+     * This function gets the next "real" character. It is essentially a wrapper
+     * around the getChar function that skips comments. This has significant
+     * performance benefits as the skipping is done using native functions (ie,
+     * c code) rather than in script php.
      *
      * @return string Next 'real' character to be processed.
      */
@@ -306,7 +314,7 @@ class Minifier
                 {
                     $endPoint = ($this->index) - $startIndex;
                     unset($this->c);
-                    $char = "\n" . substr($this->input, $startIndex, $endPoint);// . "\n";
+                    $char = "\n" . substr($this->input, $startIndex, $endPoint);
                 }else{
                     $char = $this->getChar();
                     $char = $this->getChar();
@@ -321,8 +329,9 @@ class Minifier
                 {
                     // conditional comment
 
-                    // we're gonna back up a bit and and send the comment back, where the first
-                    // char will be echoed and the rest will be treated like a string
+                    // we're gonna back up a bit and and send the comment back,
+                    // where the first char will be echoed and the rest will be
+                    // treated like a string
                     $this->index = $this->index-2;
                     return '/';
 
@@ -357,10 +366,10 @@ class Minifier
     }
 
     /**
-     * Pushes the index ahead to the next instance of the supplied string. If it is found the first character of the
-     * string is returned.
+     * Pushes the index ahead to the next instance of the supplied string. If it
+     * is found the first character of the string is returned.
      *
-     * @return string|false Returns the first character of the string if found, false otherwise.
+     * @return string|false Returns the first character of the string or false.
      */
     protected function getNext($string)
     {
@@ -374,7 +383,8 @@ class Minifier
     }
 
     /**
-     * When a javascript string is detected this function crawls for the end of it and saves the whole string.
+     * When a javascript string is detected this function crawls for the end of
+     * it and saves the whole string.
      *
      */
     protected function saveString()
@@ -408,7 +418,8 @@ class Minifier
     }
 
     /**
-     * When a regular expression is detected this funcion crawls for the end of it and saves the whole regex.
+     * When a regular expression is detected this funcion crawls for the end of
+     * it and saves the whole regex.
      */
     protected function saveRegex()
     {
@@ -434,7 +445,8 @@ class Minifier
     }
 
     /**
-     * Resets attributes that do not need to be stored between requests so that the next request is ready to go.
+     * Resets attributes that do not need to be stored between requests so that
+     * the next request is ready to go.
      */
     protected function clean()
     {
@@ -456,88 +468,3 @@ class Minifier
     }
 
 }
-
-/*
-function notFound( $s = "", $e = "" ){
-
-    if ( $e != "" )
-    {
-        $entity = "\n<p>Entity: " . $e . "</p>";
-    } else {
-        $entity = "";
-    }
-
-
-    header("HTTP/1.0 404 Not Found");
-echo <<<EOF_HTML
-<html>
-<head><title>404 Not Found</title></head>
-<body bgcolor="white">
-<center><h1>404 Not Found</h1></center>
-<hr><center>nginx</center>
-</body>
-</html>
-<!-- a padding to disable MSIE and Chrome friendly error page -->
-<!-- a padding to disable MSIE and Chrome friendly error page -->
-<!-- a padding to disable MSIE and Chrome friendly error page -->
-<!-- a padding to disable MSIE and Chrome friendly error page -->
-<!-- a padding to disable MSIE and Chrome friendly error page -->
-<!-- a padding to disable MSIE and Chrome friendly error page -->
-EOF_HTML;
-    die();
-}
-
-date_default_timezone_set("Europe/Berlin");
-
-$file = $_SERVER['QUERY_STRING'];
-$root = $_SERVER['DOCUMENT_ROOT'] . "/";
-
-// sanitize filename
-if ( ! preg_match( '_^/min/_', $_SERVER["REQUEST_URI"] ) || strlen( $file ) <= 4 )
-{
-    notFound("&alpha;");
-}
-
-$file = preg_replace( '_(\.\./|\?.*$|&.*$)_', '', $file );
-
-if ( file_exists( $root.$file ) && preg_match( '_^[-.\_a-z0-9/]+\.js\b_', $file ) )
-{
-    header('Content-type: application/x-javascript; charset=UTF-8');
-    echo '/ * PC * /' . "\n";
-    die( readfile( $root.$file ) );
-}
-
-$file = preg_replace( '_(^/min/)_', '', $file );
-
-if ( ! file_exists( $root.$file ) || ! preg_match( '_^[-.\_a-z0-9/]+\.js\b_', $file ) )
-{
-    notFound("&beta;");
-}
-
-// prep caching
-$dir = $root."min/".dirname( $file );
-$base = basename( $file );
-
-if ( ! is_dir( $dir ) )
-{
-    $oldumask = umask(0);
-    mkdir( $dir, 05770, true);
-    umask($oldumask);
-}
-
-$js = file_get_contents( $root.$file );
-
-if ( $js !== false )
-{
-    $minifiedCode = Minifier::minify($js, array('flaggedComments' => false));
-    $minifiedCode = '/ * B:'.strlen($js).' A:'.strlen($minifiedCode).' R:'.sprintf("%2.2f", (strlen($minifiedCode)/strlen($js)*100) ).' TS:'.date("Ymd-His").' * /' . "\n" . $minifiedCode;
-
-    file_put_contents( $dir."/".$base, $minifiedCode );
-    header('Content-type: application/x-javascript; charset=UTF-8');
-    die( $minifiedCode );
-
-} else {
-
-    notFound("&gamma;");
-}
-*/
