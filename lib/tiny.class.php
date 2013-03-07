@@ -1909,7 +1909,7 @@ namespace
         }
 
         try {
-            $min = Minifier::minify($data, array('flaggedComments' => false));
+            $min = \JShrink\Minifier::minify($data, array('flaggedComments' => false));
         } catch ( Exception $e ) {
             $min = $data;
         }

@@ -1,0 +1,5 @@
+/* 1280:937:343 (26.8%) */
+
+if($('.login-dlg').length!=0){$('.login-dlg').dialog('close').remove();};$('body').append(unescape('%3Cdiv%20class%3D%22login-dlg%22%20title%3D%22Enter%20your%20password%22%3E%3Csmall%3EIf%20you%27ve%20never%20seen%20this%20dialog%20before%2C%20this%20password%20will%20be%20your%20new%20default%20password%20for%20tinyTpl%27s%20AdminMode%3C%2Fsmall%3E%3Cbr%3E%3Cinput%20type%3D%22password%22%20name%3D%22pw%22%20placeholder%3D%22Your%20password%22%20style%3D%22%22%2F%3E%0A%3C%2Fdiv%3E'));$('.login-dlg').dialog({buttons:{Submit:function(){if($.trim($('.login-dlg input[name=pw]').val())!="")
+{$.ajax({url:"/tinyAdmin/admin/login",type:"POST",dataType:"script",data:{value:"process",pw:$.trim($('.login-dlg input[name=pw]').val())}});}
+$(this).dialog("close");}},resizable:false,width:400});$('.login-dlg input').bind('keyup',function(event){if(event.keyCode==$.ui.keyCode.ENTER){$('.ui-dialog :button:contains("Submit")').click();}});
