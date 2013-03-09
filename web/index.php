@@ -79,8 +79,6 @@ namespace
 
         $error = error_get_last();
 
-        // die("AM HERE!");
-
         if ( $error !== null && ( $disabled == false || ! class_exists( '\tinyTpl\tiny' ) || ! is_object( \tinyTpl\tiny::sys() ) ) )
         {
             $MSG = preg_replace( '/\s*?\[<.*?>\]\:/', ':<br/>', $error['message'] ) . "</b>";
@@ -143,7 +141,15 @@ namespace
             require_once( dirname( $_SERVER["DOCUMENT_ROOT"] ) . "/lib/tiny.class.php" );
 
             // dump the result based on given master_tpl
+            ob_start();
+
             echo $tiny::sys()->html( "master_tpl" )->html;
+
+            $html = ob_get_contents();
+
+            ob_end_clean();
+
+            echo $html;
 
         } catch ( Exception $e ) {
 
