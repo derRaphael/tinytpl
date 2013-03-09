@@ -2,9 +2,9 @@
     "current": {
         "major": 0,
         "minor": 2,
-        "sub":   5
+        "sub":   6
     },
-    "0-2-6": "Fixed annoying bug in tinyLinkBeau to work properly with fragments and get-parameters"
+    "0-2-6": "Fixed annoying bug in tinyLinkBeau to work properly with fragments and get-parameters.<br>Added capability to be run directly from php5.4's webserver, <br>Minor Fixups in tinyAdmin, <br>changed hook behaviour, <br>renamed observer interface and added new observer sbtract class.<br>Also update of documentation<br>Fixed changelog format<br>Using Version 4.1 of h5bp, update jQuery to 1.9, renamed /lib/misc to /lib/vendor and updated checks<br>Fixed error demo's nonexistent page<br>Fixed partial output dump on internal errors<br>Changed look and feel to be a bit less dark and a bit more friendly,<br>added new buttons,<br>If possible, all exceptions will be now stored for latter review",
     "0-2-5": "Fixed bug in non-existent template handling<br>Changed behaviour of tinyMongo and it's init hook<br>Fixed tpltrigger undefined variable handler<br>Improved tiny's ajax error dump to throw a customized Error into console<br>Fixed lazy typo in source documentation<br>Fixed filenotfound error in hooks.php<br>Added php cli script to create nginx config file and bash script to sanitize ownerships of tiny core folders",
     "0-2-4": "Fixed bug in tinySimpleLog's getValidDaysFolderList()<br>Fixed behaviour in special.php so minified js wont be minified again<br>Fixed mini_* functions to check for accessible cache folder<br>Fixed autoloader to support less static naming conventions<br>Catching Exceptions of JS Minifier<br>Added tinyMongo and its hook to invoke mongoDb by triggering a custom hook",
     "0-2-3": "Official initial release.<br>This version includes various fixups and an updatechecker for easier future checks.<br>",

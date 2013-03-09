@@ -10,7 +10,7 @@
     $checks = array(
         "lib" => array("r","!w"),
         "lib/hooks" => array("r","!w"),
-        "lib/misc"  => array("r","!w"),
+        "lib/vendor"  => array("r","!w"),
         "tpl" => array("r","!w"),
         "web" => array("r","!w"),
         "cache" => array("r","w"),

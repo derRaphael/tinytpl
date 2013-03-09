@@ -51,7 +51,7 @@
     $fn = $this->base . "/cache/";
 ?>
 <h2 class="topic">Toggle Hooks</h2>
-<?php if( is_dir( $fn ) ): ?>
+<?php if( $this->caching_available == true ): ?>
 <?php
 
     $fn = $this->base . "/cache/";

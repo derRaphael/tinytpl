@@ -81,21 +81,75 @@ $('.login-dlg input').bind('keyup',function(event){
 
                 $_SESSION['tinyadmin_is_logged_in'] = false;
 
-                if ( ! ( file_exists( $fn ) && is_readable( $fn ) ) )
+                if ( $this->caching_available == true && ! ( file_exists( $fn ) || is_readable( $fn ) ) )
                 {
+
                     file_put_contents($fn, sha1( $this->template_dir . $_POST['pw'] ));
+
+                } else if ( $this->caching_available == false ) {
+
+                    // Added in 0.2.6
+                    // Avoid error, when cache is not writeable
+                    ob_start();
+?>
+
+    <div class="login-dlg" title="Adminmode">
+
+        <p style="color:#800;">
+            Do you have a cache folder with proper permissions set?<br />
+            TinyTpl was unable to store your supplied credentials. <br/>
+        </p>
+        <p style="font-weight:bold;color:#f00;">You are NOT logged in.</p><br>
+
+    </div>
+
+<?php
+                    $dlg_html = ob_get_contents();
+                    ob_end_clean();
+
+                    $dlg_html = preg_replace('_^\s+|\s+$_ms', '', $dlg_html );
+
+                    ob_start();
+?>
+
+if ( $('.login-dlg').length != 0 ) {
+    $('.login-dlg').dialog('close').remove();
+};
+
+$('body').append(unescape('<?=rawurlencode($dlg_html)?>'));
+$('.login-dlg').dialog({
+    resizable: false,
+    width: 400
+});
+
+<?php
+                    $dlg_js = ob_get_contents();
+                    ob_end_clean();
+
+                    $this->MASTER_TEMPLATE = null;
+
+                    echo mini_js($dlg_js);
+
+                    die();
+
                 }
 
                 if ( file_exists( $fn ) && is_readable( $fn ) && sha1( $this->template_dir . $_POST['pw'] ) == file_get_contents($fn) ) {
+
                     $_SESSION['tinyadmin_is_logged_in'] = true;
-                    $dlg_js = 'document.location.href="/";';
+
+                    // changed to default to tinyAdmin base folder instead of project's root
+                    // Changed in 0.2.6
+                    $dlg_js = 'document.location.href="/tinyAdmin";';
+
                 } else {
                     ob_start();
 ?>
 
     <div class="login-dlg" title="Adminmode">
 
-        <small style="color:#f00;">The supplied credentials were wrong. You are NOT logged in.</small><br>
+        <p style="color:#800;">The supplied credentials were wrong.</p>
+        <p style="color:#f00;font-weight:bold;">You are NOT logged in.</p>
 
     </div>
 
@@ -127,6 +181,8 @@ $('.login-dlg').dialog({
 
                 echo mini_js($dlg_js);
 
+                die();
+
             }
 
         } else if ( $this->args[1] == "logout" && $this->method == "POST") {
@@ -145,12 +201,17 @@ $('.login-dlg').dialog({
 
             // Since we arrived here, neither login nor logout has been processed.
             // do a sanitycheck and delegate if it makes sense
+
             if ( isset($_SESSION['tinyadmin_is_logged_in']) && $_SESSION['tinyadmin_is_logged_in'] === true )
             {
                 if ( preg_match( '_^(cache|checks|hooks|pass|source)$_', $this->args[1] ) )
                 {
 
                     echo tpl( implode( "/", $this->args ) );
+
+                } else if ( $this->args[1] == "exception" ) {
+
+                    echo tpl( "admin/exception" );
 
                 } else {
 
@@ -162,7 +223,6 @@ $('.login-dlg').dialog({
                 header('Location: /'  );
 
             }
-
         }
     }
 ?>

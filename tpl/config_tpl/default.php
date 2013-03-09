@@ -1,10 +1,13 @@
 <?php
     $this->data["HEADER"] = "Welcome";
+
+    $this->data['adminMode_trigger'] = (isset($_SESSION['tinyadmin_is_logged_in']) && $_SESSION['tinyadmin_is_logged_in'] === true);
+
 ?>
 
-<?=tpls_on_state('pages/default_logged_in','pages/default_not_logged_in',(isset($_SESSION['tinyadmin_is_logged_in']) && $_SESSION['tinyadmin_is_logged_in'] === true))?>
+<?=tpls_on_state('pages/default_logged_in','pages/default_not_logged_in',$this->data['adminMode_trigger'] )?>
 
-<div>
+<div style="margin:0;">
     <div style="float:left;margin:1em;">
         <h2>Misc</h2>
         <ul>

@@ -1,17 +1,13 @@
 <?php
 /*
- * tinyLinkBeau.class.php
+ * tinyTplOrderCount.class.php
  *
  * Copyright 2013 derRaphael <software@itholic.org>
  *
- * Version 0.1.3
+ * Version 0.1
  *
- * tinyLinkBeau shows how to enable hooks (observer pattern) with the
- * tinyTpl singleton object.
- *
- * tinyLinkBeau aims to replace all links which are relative in the
- * final html document to have 'em a nice ".html" ending which makes
- * 'em look more friendly.
+ * This observer demonstrates in which order templates are renderd. It 
+ * might break you layout or functionality. Use with caution.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -42,50 +38,66 @@
  */
 namespace tinyTpl\hooks
 {
-    class tinyLinkBeau extends tinyObserver
+    class tinyTplOrderCount extends tinyObserver
     {
-        public $TARGETS = array( 'tinyTpl\tiny::html' );
+        public $TARGETS = array( 'tinyTpl\tiny::read_template' );
 
-        const VERSION = "0.1.3";
+        const VERSION = "0.1";
+
+        // We do not want tiny to init on base run
+        const AUTOINIT = false;
 
         public function trigger( $TINY, $STAGE, $TARGET )
         {
             switch ( $STAGE )
             {
-                case 255:
+                case 0:
+                    if ( $TARGET == 'tinyTpl\tiny::read_template' )
+                    {
+                        // Create or update counter
+                        if ( ! isset( \tinyTpl\tiny::sys()->tpl_counter ) )
+                        {
+                            \tinyTpl\tiny::sys()->tpl_counter = 0;
+                        } else {
+                            \tinyTpl\tiny::sys()->tpl_counter+=1;
+                        }
+                    }
+                    break;
+                case 50:
+                    if ( $TARGET == 'tinyTpl\tiny::read_template' )
+                    {
+                        // inject HTML into stream
+?><div class="exececution-order" style="position:relative;height:30px;line-height:30px;font-size:14px;font-family: sans;">
+    Execution order: 
+    <div style="-webkit-border-radius: 15px; -moz-border-radius: 15px; border-radius: 15px;; color: #fff; background: #f00; position: absolute; top: 0; left: 120px; width: 30px; height: 30px; overflow: hidden; font-size: 20px; line-height: 30px; font-weight: bold; text-align: center;">
+        <?=\tinyTpl\tiny::sys()->tpl_counter?>
+    </div>
+</div><?php
 
-                    // Grab HTML
-                    $html = $TINY->html;
-
-                    // Beautify link
-                    $html = preg_replace(
-                        '_(?<=\<a href\=")(/[^"#?.]*[^/"#?.])(?!\.[^?#]+])([?#][^"]*)?(?=")_i',
-                        '\1.html\2',
-                        $html
-                    );
-
-                    // store html
-                    $TINY->html = $html;
-
-                break;
+                    }
             }
         }
     }
 }
 
+/**
+ * The section below is somewhat html which is displayed at the hook page in tinyAdmin
+ * It must retain this format, since it's stripped from each hook class by some regex.
+**/
+
 /** ABSTRACT:
 
     <span class="x-synopsis">
-        tinyLinkBeau transforms any internal links in a SEO friendly manner.
-        By means, it adds <code>.html</code> to the link URL.
-    </span>
+        This observer demonstrates in which order templates are renderd. It might break you layout or functionality.
+        Use with caution.
+     </span>
 
     <span class="x-author">
         derRaphael
     </span>
 
     <span class="x-version">
-        0.1.3
+        0.1
     </span>
 
     <span class="x-licence">
@@ -93,10 +105,8 @@ namespace tinyTpl\hooks
     </span>
 
     <span class="x-info">
-        tinyTpl core hook
+        tinyTplOrderCount
     </span>
 
 **/
-
-
 ?>

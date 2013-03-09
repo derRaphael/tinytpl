@@ -2,9 +2,9 @@
 /*
  * tinyPageAnnotations.class.php
  *
- * Copyright 2012 derRaphael <software@itholic.org>
+ * Copyright 2013 derRaphael <software@itholic.org>
  *
- * Version 0.1
+ * Version 0.1.4
  *
  * tinyPageAnnotations shows how to enable hooks (observer pattern) with the
  * tinyTpl singleton object.
@@ -42,7 +42,7 @@
 
 namespace tinyTpl\hooks
 {
-    class tinyPageAnnotations implements tinyObserver
+    class tinyPageAnnotations extends tinyObserver
     {
         public $TARGETS = array(
                     'tinyTpl\tiny::__init',
@@ -50,7 +50,7 @@ namespace tinyTpl\hooks
                 ),
                $CF = "";
 
-        const VERSION = "0.1";
+        const VERSION = "0.1.4";
 
         private function __customConstruct( \tinyTpl\tiny $TINY )
         {
@@ -190,7 +190,7 @@ namespace tinyTpl\hooks
     </span>
 
     <span class="x-version">
-        0.1.3
+        0.1.4
     </span>
 
     <span class="x-licence">

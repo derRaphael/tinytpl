@@ -40,9 +40,9 @@
 <p>
     As name suggest, <code>/lib/hooks</code> contains the basic hooks for use with tinyTpl.
 </p>
-<h3>/lib/misc</h3>
+<h3>/lib/vendor</h3>
 <p>
-    <code>/lib/misc</code> contains the javascript minifier library. This is a good place for
+    <code>/lib/vendor</code> contains the javascript minifier library. This is a good place for
     3rd party classes.
 </p>
 <h3>/cache</h3>

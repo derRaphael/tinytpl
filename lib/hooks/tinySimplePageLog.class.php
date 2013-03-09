@@ -2,9 +2,9 @@
 /*
  * tinySimplePageLog.class.php
  *
- * Copyright 2012 derRaphael <software@itholic.org>
+ * Copyright 2013 derRaphael <software@itholic.org>
  *
- * Version 0.1.6
+ * Version 0.1.7
  *
  * tinyPageLog shows how to enable hooks (observer pattern) with the
  * tinyTpl singleton object.
@@ -47,14 +47,22 @@
  */
 namespace tinyTpl\hooks
 {
-    class tinySimplePageLog implements tinyObserver
+    class tinySimplePageLog extends tinyObserver
     {
         public $TARGETS = array( 'tinyTpl\tiny::html', 'tinyTpl\tiny::use_template' );
 
-        const VERSION = "0.1.6";
+        const VERSION = "0.1.7";
 
         public function trigger( $TINY, $STAGE, $TARGET )
         {
+            // We don't want to cache favicon requests
+            // Added in v0.1.7
+            if ( ! preg_match( '_(favicon\.ico)_', $_SERVER['REQUEST_URI'] ) )
+            {
+                // premature exit
+                return;
+            }
+
             switch ( $STAGE )
             {
                 case 0:
@@ -583,7 +591,7 @@ namespace tinyTpl\hooks
     </span>
 
     <span class="x-version">
-        0.1.6
+        0.1.7
     </span>
 
     <span class="x-licence">

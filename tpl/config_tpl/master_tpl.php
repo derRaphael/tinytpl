@@ -16,32 +16,52 @@
     </head>
     <body>
 <div id="container">
-    <div id="header" class="no-print">
-        <div id="inner-header">&nbsp;</div>
+    <dic id="inner-container">
+        <div id="body">
+            <div id="inner-body" class="box">
+                <div style="background: url(/tinyAdmin/special/img/64/tinyTpl.png) no-repeat 5px -8px; min-height: 48px; *height: 48px; padding-left: 80px;">
+                    <h1>tinyTpl<?=(isset($this->data["HEADER"])?" - ".$this->data["HEADER"]:"");?></h1>
+                </div>
+                <hr />
 
-<?=tpl('helper/small_info_top')?>
-
-    </div>
-    <div id="body">
-        <div id="inner-body" class="box">
-            <div style="background: url(/tinyAdmin/special/img/64/tinyTpl.png) no-repeat 5px -8px; min-height: 48px; *height: 48px; padding-left: 80px;">
-                <h1>tinyTpl<?=(isset($this->data["HEADER"])?" - ".$this->data["HEADER"]:"");?></h1>
+    <?php if ( $this->caching_available == false ): /* Added in v0.2.6 */ ?>
+                <div class="tiny-extra-info error">
+                    <h3>Attention: Adminmode is disabled!</h3>
+                    <p>The '$base/cache' folder does not exists or is not accessible by php. You need to create a cache folder in tinyTpl's base folder</p>
+                    <p>You may also execute the script <code style="color:#800;">$base/bin/inittinytpl.sh</code> from your server's terminal as superuser to fix that.</p>
+                    <p>Read more about <a href="/tinyAdmin/doc/internals/folderstructure">filestructures</a> used in tinyTpl.</p>
+                </div>
+    <?php endif; ?>
+    <?php if ( isset( $_SESSION['tinyAdmin_hookErrors'] ) && is_array( $_SESSION['tinyAdmin_hookErrors'] ) ): ?>
+        <?php foreach( $_SESSION['tinyAdmin_hookErrors'] as $err ): ?>
+            <div class="tiny-extra-info error">
+                <h3>An error with a hook has happened!</h3>
+                <p><?=$err?></p>
             </div>
-            <hr />
+        <?php endforeach; ?>
+        <?php unset($_SESSION['tiny_tpl_hookErrors']) ?>
+    <?php endif; ?>
 
 {TINY_TPL_CONTENT}
 
 <?=tpl('helper/msie_lt8')?>
 
+            </div>
+        </div>
+        <div id="footer">
+            <div id="inner-footer-wrap" class="no-print">
+                <div id="inner-footer" class="no-print">&nbsp;</div>
+<?=tpl('helper/small_info_bottom')?>
+            </div>
         </div>
     </div>
-    <div id="footer">
-        <div id="inner-footer" class="no-print">&nbsp;</div>
-
-<?=tpl('helper/small_info_bottom')?>
-
-    </div>
 </div>
+    <div id="header" class="no-print">
+        <div id="inner-header-wrap">
+            <div id="inner-header" class="no-print">&nbsp;</div>
+<?=tpl('helper/small_info_top')?>
+        </div>
+    </div>
 
 <?=tpl('helper/main_js')?>
 

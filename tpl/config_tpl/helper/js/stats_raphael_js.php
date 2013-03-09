@@ -63,23 +63,23 @@ var r_hits = Raphael("stats_hits_info_holder"),
                 r_hits
                     .tag(this.x, this.y[i], this.values[i], 160,10)
                     .insertBefore(this)
-                    .attr([{ fill: "#000000" },{ fill: "#ffffff" }])
+                    .attr([{ fill: "#000000" },{ fill: "#888888" }])
             );
         }
     }, function () {
         this.tags && this.tags.remove();
     });
-    r_hits.text(320, 50, "Total Hits" + stats_hits_total).attr({ font: "20px sans-serif", fill: "#ffffff" });
+    r_hits.text(320, 50, "Total Hits" + stats_hits_total).attr({ font: "20px sans-serif", fill: "#888888" });
 
-    r_hits_lc.axis[0].attr({stroke:'#ffffff'});
-    r_hits_lc.axis[1].attr({stroke:'#ffffff'});
+    r_hits_lc.axis[0].attr({stroke:'#888888'});
+    r_hits_lc.axis[1].attr({stroke:'#888888'});
 
     // Modify the x axis labels
     var xText = r_hits_lc.axis[0].text.items;
 
     for(var i in xText)
     {
-        xText[i].attr({ fill: '#cccccc'});
+        xText[i].attr({ fill: '#666666'});
 
     };
 
@@ -87,7 +87,7 @@ var r_hits = Raphael("stats_hits_info_holder"),
 
     for(var i in yText)
     {
-        yText[i].attr({fill: '#cccccc'});
+        yText[i].attr({fill: '#666666'});
     };
 
 var r_url = Raphael("stats_urls_info_holder"),
@@ -100,23 +100,23 @@ var r_url = Raphael("stats_urls_info_holder"),
         if ( /\d+/.test(i) )
         {
             // Fix Textcolor and x positioning
-            r_url_set.labels[i].attr({ fill: '#cccccc', x: 20 });
+            r_url_set.labels[i].attr({ fill: '#666666', x: 20 });
         }
 
     };
-    r_url.text(320, 50, stats_url_info).attr({ font: "20px sans-serif", fill: "#ffffff" });
+    r_url.text(320, 50, stats_url_info).attr({ font: "20px sans-serif", fill: "#888888" });
 
 
 var r_os = Raphael("stats_os_info_holder"),
-    pie_os = r_os.piechart(200, 260, 150, stats_os_values, { legend: stats_os_legend, legendpos: "east", legendcolor: '#ffffff'});
+    pie_os = r_os.piechart(200, 260, 150, stats_os_values, { legend: stats_os_legend, legendpos: "east", legendcolor: '#888888'});
 
-    r_os.text(320, 50, "OS usage" + stats_os_info).attr({ font: "20px sans-serif", fill: "#ffffff" });
+    r_os.text(320, 50, "OS usage" + stats_os_info).attr({ font: "20px sans-serif", fill: "#888888" });
     pie_os.hover(pie_hover_in, pie_hover_out);
 
 var r_browser = Raphael("stats_browser_info_holder"),
-    pie_browser = r_browser.piechart(200, 260, 150, stats_browser_values, { legend: stats_browser_legend, legendpos: "east", legendcolor: '#ffffff'});
+    pie_browser = r_browser.piechart(200, 260, 150, stats_browser_values, { legend: stats_browser_legend, legendpos: "east", legendcolor: '#888888'});
 
-    r_browser.text(320, 50, "Browser usage" + stats_browser_info).attr({ font: "20px sans-serif", fill: "#ffffff" });
+    r_browser.text(320, 50, "Browser usage" + stats_browser_info).attr({ font: "20px sans-serif", fill: "#888888" });
     pie_browser.hover(pie_hover_in, pie_hover_out);
 
 $(".raphael_stats_holder:not(:first)").hide();

@@ -53,6 +53,68 @@ namespace tinyTpl
 
 namespace
 {
+
+    /*
+     *
+     * name: premature_shutdown
+     *
+     * This function handles core errors which might prevent tinyTpl from proper working
+     * eg errror in tiny's class itself
+     *
+     * Added in v0.2.6
+     *
+     * @return
+     *
+     */
+    function premature_shutdown()
+    {
+        static $disabled = false;
+
+        $own_arguments = func_get_args();
+
+        if ( is_array( $own_arguments ) && isset( $own_arguments[0] ) && $own_arguments[0] == "disable" )
+        {
+            $disabled = true;
+        }
+
+        $error = error_get_last();
+
+        // die("AM HERE!");
+
+        if ( $error !== null && ( $disabled == false || ! class_exists( '\tinyTpl\tiny' ) || ! is_object( \tinyTpl\tiny::sys() ) ) )
+        {
+            $MSG = preg_replace( '/\s*?\[<.*?>\]\:/', ':<br/>', $error['message'] ) . "</b>";
+            $FILE = basename( $error['file'] );
+            $LINE = $error['line'];
+            $RES =  "<h3>Unrecoverable Code Error (pre)</h3>".
+                    "<p>$MSG</p>".
+                    "<p>File: <b>$FILE</b> in line <b>$LINE</b></p>";
+
+            preg_match( '_^<!doctype.*/html>_ims', file_get_contents( __FILE__ ), $HTML );
+            $SELF = $HTML[0];
+
+            if ( \tinyTpl\config::$dev_state == "dev" )
+            {
+                $SELF = preg_replace( '_<!-- EXTRAINFO -->_', $RES, $SELF );
+            }
+            echo $SELF;
+
+            // If this function ever triggers, the exit makes sure, it won't be called twice or 
+            // another shutdown handler will be called.
+            exit();
+        }
+    }
+
+    register_shutdown_function('premature_shutdown');
+
+    // This is only used, when tinyTpl is running directly from php's build in webserver
+    // Added in tinyTpl v0.2.6
+    if ( php_sapi_name() == "cli-server" && preg_match( '_^/assets/_', $_SERVER['REQUEST_URI'] ) )
+    {
+        // deliver content from assets folder immediately
+        return false;
+    }
+
     // The if below allows tinyTpl to show detailed exception information,
     // but only when in development state
     if ( !isset( \tinyTpl\config::$dev_state ) || \tinyTpl\config::$dev_state == "dev" )
@@ -62,7 +124,16 @@ namespace
         require_once( dirname( $_SERVER["DOCUMENT_ROOT"] ) . "/lib/tiny.class.php" );
 
         // dump the result based on given master_tpl
+        ob_start();
+
         echo $tiny::sys()->html( "master_tpl" )->html;
+
+        $html = ob_get_contents();
+
+        ob_end_clean();
+
+        echo $html;
+
 
     } else {
 
@@ -107,16 +178,17 @@ namespace
 	<title>Internal Server Error</title>
     <style type="text/css">
         html,body { margin:0;padding:0;height:100%; font-size: 14px; }
-        body { background: #000; font-size: 1.1em; font-family: serif; color: #eee; }
+        body { background: #efefef; font-size: 1.1em; font-family: serif; color: #888; }
         div.container { min-height:100%;position:relative; }
         div.bg { position:absolute; top: 0; left: 0; bottom: 0; right: 0; width: auto; height: auto;
             overflow: hidden; }
         div.bg div { position: absolute; bottom: -30%; right: 0; font-size: 45em; letter-spacing: -.09em;
-            font-weight:bold; color: #222; color: rgba(0,0,0,.25); text-shadow: 0 0 1em #444; }
+            font-weight:bold; color: #222; color: rgba(0,0,0,.25); 
+            text-shadow: 0 2px 0 #aaa, 0 -2px 0 #aaa, 2px 0 0 #aaa, -2px 0 0 #aaa; color:#efefef;        }
         div.box { position: absolute; left: 1em; right: 1em; top: 1em; bottom: 1em; width: auto; height: auto;
-            background: rgba(64,16,16,.5); padding: 3em; margin: 3em; font-family: sans;
-            -webkit-border-radius: 2em; -moz-border-radius: 2em; border-radius: 2em;}
-        div.box h1 { color: #888; text-shadow: 0 0 .25em #000;  }
+            background: rgba(255,255,255,.75); padding: 3em; margin: 3em; font-family: sans; border: 1px solid #aaa;
+            -webkit-border-radius: 2em; -moz-border-radius: 2em; border-radius: 2em; }
+        div.box h1 { color: #888; text-shadow: 0 0 .25em #bbb;  }
         div.box p { font-size: 1.2em; text-shadow: 0 0 1em #aaa; }
         div.box hr { background: #444; color: #444; border: 0; height: 2px;  }
         div.box a { color: #f80;  }
@@ -130,6 +202,7 @@ namespace
         <hr />
         <p>You're seeing this page, because our server is currently expiriencing some difficulties.</p>
         <p>We apologise for any inconvenience.</p>
+        <!-- EXTRAINFO -->
 <!--[if lt IE 8]>
         <hr />
         <p class=chromeframe>

@@ -2,9 +2,9 @@
 /*
  * tinyBenchmark.class.php
  *
- * Copyright 2012 derRaphael <software@itholic.org>
+ * Copyright 2013 derRaphael <software@itholic.org>
  *
- * Version 0.1.2
+ * Version 0.1.3
  *
  * tinyBenchmark shows how to enable hooks (observer pattern) with the
  * tinyTpl singleton object.
@@ -44,14 +44,14 @@
 
 namespace tinyTpl\hooks
 {
-    class tinyBenchmark implements tinyObserver
+    class tinyBenchmark extends tinyObserver
     {
         public $TARGETS = array(
                     'tinyTpl\tiny::__init',
                     'tinyTpl\tiny::html',
                 );
 
-        const VERSION = "0.1.2";
+        const VERSION = "0.1.3";
 
         public function trigger( $TINY, $STAGE, $TARGET )
         {
@@ -91,7 +91,7 @@ namespace tinyTpl\hooks
     </span>
 
     <span class="x-version">
-        0.1.2
+        0.1.3
     </span>
 
     <span class="x-licence">

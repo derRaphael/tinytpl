@@ -2,9 +2,9 @@
 /*
  * tinyHeaderInfo.class.php
  *
- * Copyright 2012 derRaphael <software@itholic.org>
+ * Copyright 2013 derRaphael <software@itholic.org>
  *
- * Version 0.1.3
+ * Version 0.1.4
  *
  * tinyHeaderInfo shows how to enable hooks (observer pattern) with the
  * tinyTpl singleton object.
@@ -44,11 +44,11 @@
 
 namespace tinyTpl\hooks
 {
-    class tinyHeaderInfo implements tinyObserver
+    class tinyHeaderInfo extends tinyObserver
     {
         public $TARGETS = array( 'tinyTpl\tiny::__alt_construct' );
 
-        const VERSION = "0.1.3";
+        const VERSION = "0.1.4";
 
         public function trigger( $TINY, $STAGE, $TARGET )
         {
@@ -76,7 +76,7 @@ namespace tinyTpl\hooks
     </span>
 
     <span class="x-version">
-        0.1.3
+        0.1.4
     </span>
 
     <span class="x-licence">

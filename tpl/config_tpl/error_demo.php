@@ -75,11 +75,19 @@
         </p>
     </li>
     <li>
+    <?php if ( file_exists( $this->template_dir . $this->default_master_tpl_dir . $this->MASTER_TEMPLATE . $this->tplExt ) ): ?>
         <h3><a href="/tinyAdmin/error_demo/real_notfound_error">Linking nonexistant page</a></h3>
         <p>
             You will be forwarded to a guaranteed non existant page to provoke a 404 Document
-            not found Error
+            not found Error.
         </p>
+    <?php else: ?>
+        <h3>Linking nonexistant page</h3>
+        <p>
+            You have not setup a mastertemplate and a default handler. This demo only works, when both files
+            exists.
+        </p>
+    <?php endif; ?>
     </li>
 </ul>
 <?php endif; ?>

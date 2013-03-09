@@ -69,8 +69,17 @@ namespace tinyTpl\db
                 ${$key} = $value;
             }
 
-            $this->connection = new \Mongo( $host, $connectionOptions );
-            $this->init( $database );
+            /**
+             * Behaviour changed in tinytpl v0.2.6
+             *
+             * Check if Mongoclass exists and is available. otherwise fail silently
+             *
+            **/
+            if ( class_exists( '\Mongo' ) )
+            {
+                $this->connection = new \Mongo( $host, $connectionOptions );
+                $this->init( $database );
+            }
         }
 
         /*

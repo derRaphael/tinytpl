@@ -4,7 +4,7 @@
  *
  * Copyright 2012 derRaphael <software@itholic.org>
  *
- * Version 0.1
+ * Version 0.2
  *
  * tinyMongoInit initialises mongoDb for usage with tinyTpl.
  *
@@ -41,13 +41,16 @@
 
 namespace tinyTpl\hooks
 {
-    class tinyMongoInit implements tinyObserver
+    class tinyMongoInit extends tinyObserver
     {
         public $TARGETS = array(
                     'tinyTpl\tiny::__init',
                 );
 
-        const VERSION = "0.1";
+        const VERSION  = "0.2";
+
+        // We do not want tiny to init on base run
+        const AUTOINIT = false;
 
         public function trigger( $TINY, $STAGE, $TARGET )
         {
@@ -64,7 +67,38 @@ namespace tinyTpl\hooks
 
                     if ( $TARGET == 'tinyTpl\tiny::__init' )
                     {
-                        \tinyTpl\tiny::sys()->mongo = new \tinyTpl\db\tinyMongo( $db_options );
+                        /**
+                         * Added in v0.2
+                         *
+                         * Wrap Mongo Class initialisation in try catch block
+                         * in order to avoid an Exceptional drop out, prior to
+                         * tinytpls Exception handling.
+                         *
+                        **/
+                        try 
+                        {
+                            \tinyTpl\tiny::sys()->mongo = new \tinyTpl\db\tinyMongo( $db_options );
+                        }
+                        catch ( \MongoConnectionException $MongoException ) 
+                        {
+                            // Since we arrived here, avoid further including of this hook and disable it
+                            $fn = \tinyTpl\tiny::sys()->base . "/cache/hooks";
+                            $result = rename( "$fn/tinyMongoInit.class.php", "$fn/tinyMongoInit.class.php.available" );
+
+                            if ( isset( $_SESSION ) && is_array( $_SESSION ) )
+                            {
+                                if ( ! isset( $_SESSION['tinyAdmin_hookErrors'] ) || ! is_array( $_SESSION['tinyAdmin_hookErrors'] ) )
+                                {
+                                    $_SESSION['tinyAdmin_hookErrors'] = array();
+                                }
+
+                                $_SESSION['tinyAdmin_hookErrors'][] = "tinyMongoInit was due to failure autodeactivated.<br/>Full message was " .$MongoException->message;
+                            }
+
+
+                            // generate an exception message, by using tiny's exception handler
+                            \tinyTpl\tiny::sys()->handle_exception( $MongoException );
+                        }
                     }
                     break;
             }
@@ -86,7 +120,7 @@ namespace tinyTpl\hooks
     </span>
 
     <span class="x-version">
-        0.1
+        0.2
     </span>
 
     <span class="x-licence">

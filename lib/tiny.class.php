@@ -2,9 +2,9 @@
 /*
  * tiny.class.php
  *
- * Copyright 2012 derRaphael <software@itholic.org>
+ * Copyright 2013 derRaphael <software@itholic.org>
  *
- * Version 0.2.5
+ * Version 0.2.6
  *
  * Tiny aims to be a small fast and reliable templating engine.
  *
@@ -119,12 +119,13 @@ namespace tinyTpl
         // Flag for development state - possible values:
         //      dev, stable
            ,   $dev_state  = "dev"
+
         ;
 
         /*
          * Class Constants
          */
-        const VERSION = "0.2.5";
+        const VERSION = "0.2.6";
 
         // Standard Master Template
         const MASTER_TEMPLATE = "master_tpl";
@@ -246,7 +247,12 @@ namespace tinyTpl
                 // Register ObserverStorage
                 self::$sys->_store = new \SplObjectStorage();
 
-                /*/
+                /*
+                 * Add a flag to indicate if caching is available
+                 */
+                self::$sys->caching_available = ( is_dir( $base . "/cache" ) && is_writable( $base . "/cache" ) );
+
+                /*
                  *
                  * Earliest possible place to register all hooks.
                  *
@@ -261,13 +267,22 @@ namespace tinyTpl
                  *
                 **/
 
-                if ( is_dir( $base . "/cache" )
+                // Set hooksource in order to respect AUTOINIT when cache exists and
+                // no hooks have been copied yet.
+                $hookSource = "cache";
+
+                if ( self::$sys->caching_available == true
                   && is_dir( $base . "/cache/hooks" )
                   && is_writeable( $base . "/cache/hooks" )
                 ) {
                     $dir = new \RecursiveDirectoryIterator( $base . "/cache/hooks" );
                 } else {
+
                     $dir = new \RecursiveDirectoryIterator( $base . "/lib/hooks" );
+
+                    // Set hooksource in order to respect AUTOINIT when cache exists and
+                    // no hooks have been copied yet.
+                    $hookSource = "lib";
                 }
 
                 $ite = new \RecursiveIteratorIterator($dir);
@@ -289,7 +304,19 @@ namespace tinyTpl
                     **/
                     $observer = '\\tinyTpl\\hooks\\' . preg_replace('_.*/|\..*$_','',$observerHook[0]);
 
-                    self::$sys->attach_observer( new $observer );
+                    /**
+                     * Changed behaviour for support automagic initialisation on
+                     * tiny's first run - in order to respect a hooks AUTOINIT constant.
+                     *
+                     * Changed in v0.2.6
+                    **/
+                    if ( 
+                           ( $hookSource == "lib" && $observer::AUTOINIT == true )
+                        || ( self::$sys->caching_available == false && $observer::AUTOINIT == true ) 
+                        || ( self::$sys->caching_available == true && $hookSource == "cache" ) 
+                    ) {
+                        self::$sys->attach_observer( new $observer );
+                    }
 
                 }
 
@@ -504,15 +531,7 @@ namespace tinyTpl
             $this->method  = ( $_SERVER["REQUEST_METHOD"] != "" ? $_SERVER["REQUEST_METHOD"] : "GET" );
 
             // Sets flag if current request is ajax
-            $this->isAjax  =  (
-                                (
-                                        isset( $_SERVER[ "X_REQUESTED_WITH" ] )
-                                     && $_SERVER[ "X_REQUESTED_WITH" ] == "XMLHttpRequest"
-                                 ) || (
-                                        isset( $_SERVER[ "HTTP_X_REQUESTED_WITH" ] )
-                                     && $_SERVER[ "HTTP_X_REQUESTED_WITH" ] == "XMLHttpRequest"
-                                 )
-                             ) ? true : false;
+            $this->isAjax  =  $this->isAjax();
 
             // Remove any SEO suffixes
             $_SERVER[ "REQUEST_URI" ] = preg_replace( ';\.html\b;', '', $_SERVER[ "REQUEST_URI" ] );
@@ -525,6 +544,14 @@ namespace tinyTpl
             $this->build_action();
 
             $this->notify_observer( __METHOD__, 255 );
+
+            // Added in v0.2.6
+            // Since we arrived here, we simply register the premature shutdown again, in case
+            // anything goes terribly wrong.
+            register_shutdown_function('\premature_shutdown');
+            // additionally we set the disabled flag, to avoid triggering it the 1st time and
+            // - if possible let the tiny class handle it gracefully.
+            \premature_shutdown( "disable" );
 
         }
 
@@ -602,17 +629,19 @@ namespace tinyTpl
                     {
                         $this->args[0] = "default";
                     }
-                    // Set defaults
+                    // Override set defaults
                     $defaults = array(
                         "tplExt" => ".php",
                         "tpl404" => "404",
                         "tpl500" => "500",
                         "tplXXX" => "xxx",
                         "default_tpl_logic_dir" => "/tplLogic/",
-                        // Set default master template dir to empty string, since
-                        // rendering will stop working properly when a master template
-                        // has been defined elsewhere.
-                        "default_master_tpl_dir" => "",
+                        /**
+                         * Set default master template dir.
+                         *
+                         * Fixed in 0.2.6
+                        **/
+                        "default_master_tpl_dir" => "master_tpl/",
                         "default_error_tpl_dir" => "error_tpl/",
                         "default_template" => "default",
                         "TINY_TPL_CONTENT_PLACEHOLDER" => "{TINY_TPL_CONTENT}"
@@ -698,32 +727,7 @@ namespace tinyTpl
 
             } else if( ! is_readable ( $TEMPLATE_FILENAME  ) && $TEMPLATE_MODE === self::TINY_TEMPLATE_MODE ) {
 
-                // File is not readable and we're not in template mode - build the 404 filename
-                $TEMPLATE_FILENAME = $this->template_dir . $this->default_error_tpl_dir . $this->tpl404 . $this->tplExt;
-
-                $this->MASTER_TEMPLATE = null;
-
-                // Check if we have a valid 404 template
-                if ( is_readable ( $TEMPLATE_FILENAME  ) ) {
-
-                    $this->read_template( $TEMPLATE_FILENAME );
-
-                } else {
-
-                    $STR = "<html><head><title>404 - Not Found</title></head>"
-                        . '<body style="color:#888;background:#000;"><div style="width:960px;margin:0 auto;margin-top:2em;"><h1>Not Found</h2>'
-                        . "<p>The requested URL was not found on this server.";
-
-                    if ( isset( $this->tpl404 ) && ! is_readable ( $TEMPLATE_FILENAME  ) )
-                    {
-                        $STR .= " Additionally, a 404 Not Found error was encountered while trying to use an ErrorDocument to handle the request.";
-                    }
-                    $STR .= "</p>"
-                        . '<hr size=1><p style="text-align: center;">tinyTpl v'.self::VERSION."</p></div></body></html>";
-
-                    $this->html = $STR;
-
-                }
+                $this->return_404();
 
             } else if( ! is_readable ( $TEMPLATE_FILENAME  ) && $TEMPLATE_MODE !== self::TINY_TEMPLATE_MODE ) {
 
@@ -742,7 +746,7 @@ namespace tinyTpl
          *
          * This function reads template and executes it
          *
-         * Added in v0.1
+         * Changed in v0.2.6
          *
          * @param string $TEMPLATE_FILENAME
          * @return
@@ -753,21 +757,28 @@ namespace tinyTpl
             $this->notify_observer( __METHOD__, 0 );
 
             ob_start();
+
             include( $TEMPLATE_FILENAME );
-            if ( $SET_HTML == true )
+
+            $this->notify_observer( __METHOD__, 50 );
+
+            $this->tmp_html = ob_get_contents();
+            ob_end_clean();
+
+            $this->notify_observer( __METHOD__, 100 );
+
+            if ( $SET_HTML == false ) 
             {
-                $this->html = ob_get_contents();
-                ob_end_clean();
+                // Careful: Hereafter the final observer call wont be executed
+                return $this->tmp_html;
 
-            } else if ( $SET_HTML == false ) {
+            } else {
 
-                $DATA = ob_get_contents();
-                ob_end_clean();
-
-                return $DATA;
+                $this->html = $this->tmp_html;
             }
 
             $this->notify_observer( __METHOD__, 255 );
+
         }
 
         /*
@@ -795,6 +806,7 @@ namespace tinyTpl
             $this->build_action();
 
             $this->notify_observer( __METHOD__, 255 );
+
             return $this;
         }
 
@@ -856,8 +868,12 @@ namespace tinyTpl
          * @return
          *
          */
-        public function failsafe_render( $TINY_DATA = "" )
+        public function failsafe_render( $TINY_DATA = "", $RETURN_AS_STRING = false )
         {
+            // Flush any buffered output
+            // Added in 0.2.6
+            $this->clean_all_ob_levels();
+
             $this->MASTER_TEMPLATE = null;
 
             $this->html = "";
@@ -879,7 +895,7 @@ namespace tinyTpl
             } else {
 
                 $STR = "<html><head><title>An error occured</title></head>"
-                    . '<body style="color:#888;background:#000;"><div style="width:960px;margin:0 auto;;margin-top:2em;"><h1>An error occured</h2>'
+                    . '<body style="color:#888;background:#efefef;font-family: sans;"><div style="width:960px;margin:0 auto;;margin-top:2em;"><h1>An error occured</h2>'
                     . $TINY_DATA;
 
                 if ( isset( $this->tplXXX ) && ! is_readable ( $TEMPLATE_FILENAME  ) )
@@ -891,7 +907,16 @@ namespace tinyTpl
 
             }
 
-            die( $STR );
+            // Added in v0.2.6
+            if ( $RETURN_AS_STRING == false )
+            {
+                echo $STR;
+                die();
+
+            } else {
+
+                return $STR;
+            }
         }
 
         /*
@@ -914,21 +939,22 @@ namespace tinyTpl
             {
                 $error = error_get_last();
 
-                if($error !== NULL){
+                if( $error !== NULL )
+                {
 
                     self::sys()->html = "";
 
-                    $MSG = preg_replace( '/\s*?\[<.*?>\]\:/', ':<br/>&nbsp;&nbsp;&nbsp;<b style="color:#fff;margin:0;padding:0;margin-left: 2em;">', $error['message'] ) . "</b>";
+                    $MSG = preg_replace( '/\s*?\[<.*?>\]\:/', ':<br/>&nbsp;&nbsp;&nbsp;<b style="color:#888;margin:0;padding:0;margin-left: 2em;">', $error['message'] ) . "</b>";
                     $FILE = basename( $error['file'] );
                     $LINE = $error['line'];
-                    $RES =  "<h3 style=\"color:#f00;\">Unrecoverable Code Error</h3>".
+                    $RES =  "<h3 style=\"color:#a00;\">Unrecoverable Code Error</h3>".
                             "<p>$MSG</p>".
-                            "<p>File: <b style=\"color:white\">$FILE</b> in line <b style=\"color:white\">$LINE</b></p>";
+                            "<p>File: <b style=\"color:#666\">$FILE</b> in line <b style=\"color:#666\">$LINE</b></p>";
 
-                    if ( isset( self::sys()->isAjax ) && self::sys()->isAjax == true )
+                    if ( self::sys()->isAjax() )
                     {
                         // We're responding to an ajax call. Do something.
-                        if ( self::sys()->dev_state == "stable" )
+                        if ( self::sys()->dev_state != "dev" )
                         {
                             // Only set header in stable mode, otherwise debug information wont be displayed properly
                             // under some curcumstances
@@ -970,9 +996,13 @@ namespace tinyTpl
          */
         public static function handle_error( $CODE, $MSG, $FILE, $LINE )
         {
+            // Flush any buffered output
+            // Added in 0.2.6
+            self::clean_all_ob_levels();
+
             self::sys()->html = "";
 
-            if ( self::sys()->dev_state == "stable" && isset( self::sys()->isAjax ) && self::sys()->isAjax !== true )
+            if ( self::sys()->dev_state != "dev" && isset( self::sys()->isAjax ) && self::sys()->isAjax !== true )
             {
                 $template_dir  = dirname( $_SERVER["DOCUMENT_ROOT"] ) . self::sys()->default_tpl_dir;
 
@@ -986,7 +1016,7 @@ namespace tinyTpl
                 } else {
 
                     $STR = "<html><head><title>An error happened</title></head>"
-                        . '<body style="color:#888;background:#000;"><div style="width:960px;margin:0 auto;;margin-top:2em;"><h1>An error occured</h2>'
+                        . '<body style="color:#888;background:#fff;font-family: sans;"><div style="width:960px;margin:0 auto;;margin-top:2em;"><h1>An error occured</h2>'
                         . "<p>That's all we know.</p>";
 
                     if ( isset( self::sys()->tpl500 ) && ! is_readable ( $TEMPLATE_FILENAME  ) )
@@ -1005,7 +1035,7 @@ namespace tinyTpl
             if ( isset( self::sys()->isAjax ) && self::sys()->isAjax == true )
             {
                 // We're responding to an ajax call. Do something.
-                if ( self::sys()->dev_state == "stable" )
+                if ( self::sys()->dev_state != "dev" )
                 {
                     // Only set header in stable mode, otherwise debug information wont be displayed properly
                     // under some curcumstances
@@ -1021,16 +1051,17 @@ namespace tinyTpl
                         "code" => $CODE
                     );
                 }
+
                 // dump the error message
                 self::dump_ajax_error( $result );
                 die();
             }
 
-            $MSG = preg_replace( '/\s*?\[<.*?>\]\:/', ':<br/>&nbsp;&nbsp;&nbsp;<b style="color:#fff;margin:0;padding:0;margin-left: 2em;">', $MSG ) . "</b>";
+            $MSG = preg_replace( '/\s*?\[<.*?>\]\:/', ':<br/>&nbsp;&nbsp;&nbsp;<b style="color:#666;margin:0;padding:0;margin-left: 2em;">', $MSG ) . "</b>";
             $FILE = basename( $FILE );
-            $RES =  "<h3 style=\"color:#f00;\">Code $CODE Error</h3>".
-                    "<p>$MSG</p>".
-                    "<p>File: <b style=\"color:white\">$FILE</b> in line <b style=\"color:white\">$LINE</b></p>";
+            $RES =  "<h3 style=\"color:#a00;\">Code $CODE Error</h3>\n".
+                    "<p>$MSG</p>\n".
+                    "<p>File: <b style=\"color:#666\">$FILE</b> in line <b style=\"color:#666\">$LINE</b></p>\n";
 
             die ( self::sys()->failsafe_render( $RES, true ) );
 
@@ -1050,8 +1081,25 @@ namespace tinyTpl
          */
         public static function dump_ajax_error( $results = array( "An error occured. That's all we know." ) )
         {
-            if ( isset( self::sys()->isAjax ) && self::sys()->isAjax == true )
+            // Flush any buffered output
+            // Added in 0.2.6
+            self::clean_all_ob_levels();
+
+            if ( self::sys()->isAjax() )
             {
+                // Added in v0.2.6
+                if ( self::sys()->dev_state != "dev" )
+                {
+                    // Fake header 200
+                    // FCGI Check for proper Header
+                    // Note: This is not recommended, and only in dev stage to trigger
+                    //       Tiny's error500 JS Object.
+                    header_remove();
+                    $header_prefix = self::get_proper_header();
+                    header( $header_prefix . " 200 Ok.", true, 200 );
+                    die( ' /* no more */ ');
+                }
+
                 // We're ajax and JSON dump given result in proper format.
                 if ( array_key_exists('HTTP_ACCEPT', $_SERVER) && preg_match( '_json_i', $_SERVER['HTTP_ACCEPT'] ) )
                 {
@@ -1064,16 +1112,35 @@ namespace tinyTpl
                 $tiny500 = 'var tiny500 = function(message){this.name="tinyError #500 [Internal Server Error]"; this.message=message;}; tiny500.prototype = new Error();';
                 if ( all_array_keys_exist( array('code','file','line','msg'), $results ) )
                 {
+                    $err_suffix = "";
+
                     // Beautify Msg
-                    $err_msg = '"Code '.$results["code"].' in File \"'.$results["file"].'\" - '.$results["msg"].' in line '.$results["line"].'"';
+                    if ( $results['code'] == "Exception" )
+                    {
+                        $err_msg = '"Exception';
+
+                        if ( isset( $results["exc"] ) && trim( $results["exc"] ) != "" )
+                        {
+                            $err_suffix = "\\n  Review the entire exception under " . $results["exc"];
+                        }
+
+                    } else {
+                        $err_msg = '"Code '.$results["code"];
+                    }
+                    $err_msg .= ' in File \"'.$results["file"].'\" - '.$results["msg"].' in line '.$results["line"] . $err_suffix.'"';
+
                 } else {
                     // Dump ugly Error
                     $err_msg = '"'.preg_replace( '_\s+_', ' ', str_replace( array("\n","\t"), array('\n','\t'), print_r($results,true) ) ).'"';
                 }
-                $js_timeout = 'setTimeout(function(){'.$tiny500.'throw new tiny500('.$err_msg.')},100)';
+                $js_timeout = ';setTimeout(function(){'.$tiny500.'throw new tiny500('.$err_msg.')},100);';
+
+                $js_timeout = preg_replace( '_'.preg_quote( self::sys()->base, "_" ).'_', "…", $js_timeout );
 
                 // Timeout is neccssary to run in a different context to trick any try catch mechanisms
-                die( $js_timeout );
+                echo $js_timeout;
+                exit();
+                
             }
         }
 
@@ -1092,43 +1159,15 @@ namespace tinyTpl
         {
             self::sys()->html = "";
 
-            // FCGI Check for proper Header
-            $header_prefix = self::get_proper_header();
-            header( $header_prefix . " 500 Internal Server Error.", true, 500 );
-
-            if ( isset( self::sys()->isAjax ) && self::sys()->isAjax == true )
-            {
-                // We're responding to an ajax call. Do something.
-                if ( self::sys()->dev_state == "stable" )
-                {
-                    // Only set header in stable mode, otherwise debug information wont be displayed properly
-                    // under some curcumstances
-                    $header_prefix = self::get_proper_header();
-                    header( $header_prefix . " 500 Internal Server Error.", true, 500 );
-                    $result = array("A server error occured. That's all we know.");
-
-                } else {
-
-                    $data  = self::sys()->trace_dump_exception( $ex );
-
-                    $FILE  = basename( $data["file"] );
-                    $LINE  = $data["line"];
-                    $MSG   = $data["msg"];
-
-                    $result = array(
-                        "file" => $FILE,
-                        "line" => $LINE,
-                        "msg" => $MSG,
-                        "code" => print_r( $data['trace'][0], true )
-                    );
-                }
-                // dump the error message
-                self::dump_ajax_error( $result );
-                die();
-            }
-
             try
             {
+                if ( ! self::sys()->isAjax() )
+                {                   
+                    // FCGI Check for proper Header
+                    $header_prefix = self::get_proper_header();
+                    header( $header_prefix . " 500 Internal Server Error.", true, 500 );
+                }
+
                 $data  = self::sys()->trace_dump_exception( $ex );
 
                 $FILE  = basename( $data["file"] );
@@ -1148,7 +1187,7 @@ namespace tinyTpl
                         $set["args"] = preg_replace( '_(?<=color\:#884;\"\>\').*?'.preg_quote($base,"_").'_', '.../', $set["args"] );
                     }
 
-                    $a  = ( isset( $set["args"] ) ) ? '( <span class="tiny-exception-args" style="color:#fff">'.$set["args"]."</span> );" : "";
+                    $a  = ( isset( $set["args"] ) ) ? '( <span class="tiny-exception-args" style="color:#666">'.$set["args"]."</span> );" : "";
                     $f  = ( isset( $set["file"] ) ) ? basename( $set["file"] ) : "";
                     $l  = ( isset( $set["line"] ) ) ? $set["line"] : "";
                     $t  = ( isset( $set["type"] ) && $set["type"] != "type ( undefined )")
@@ -1169,14 +1208,93 @@ namespace tinyTpl
 
                 $res = "<h3 style=\"color:#f00;\">Exception: '". $data["exc"] ."'</h3>".
                     "<p>Msg: $MSG</p>".
-                    "<p>File: <b style=\"color:white\">$FILE</b> in line <b style=\"color:white\">$LINE</b></p>" .
+                    "<p>File: <b style=\"color:#666\">$FILE</b> in line <b style=\"color:#666\">$LINE</b></p>" .
                     "$TRACE";
 
-                die ( self::sys()->failsafe_render( $res, true ) );
+                $exception_html = self::sys()->failsafe_render( $res, true );
+
+                // Added in v0.2.6
+                // by default tiny stores now every occuring exception 
+                if ( self::sys()->caching_available == true )
+                {
+                    // Store Exception into tiny's cache for latter review
+                    $target = self::sys()->base . "/cache/exceptions";
+
+                    if ( ! is_dir( $target ) )
+                    {
+                        // Get cache folder fileperms
+                        $cFilePerms = fileperms( dirname( $target ) );
+                        mkdir( $target, $cFilePerms, true );
+                    }
+                    $fn = $target . "/" . sha1( microtime(true) ) . ".exception";
+
+                    file_put_contents( $fn, $exception_html );
+
+                    $fn = basename( $fn,".exception" );
+
+                    $fn = substr($fn, 0, 5) . "..." . substr( $fn, -5 );
+
+                    $stored_exception_path = "/tinyAdmin/admin/exception/view/" . $fn;
+                }
+
+                if ( self::sys()->isAjax() )
+                {
+                    // We're responding to an ajax call. Do something.
+                    if ( self::sys()->dev_state != "dev" )
+                    {
+                        // Only set header in stable mode, otherwise debug information wont be displayed properly
+                        // under some curcumstances
+                        $header_prefix = self::get_proper_header();
+                        header( $header_prefix . " 500 Internal Server Error.", true, 500 );
+                        $result = array(" A server error occured. That's all we know.");
+
+                        // dump the error message
+                        self::dump_ajax_error( $result );
+                        die();
+
+                    } else {
+
+                        $FILE  = basename( $data["file"] );
+                        $LINE  = $data["line"];
+                        $MSG   = $data["msg"];
+
+                        $result = array(
+                            "file" => $FILE,
+                            "line" => $LINE,
+                            "msg" => $MSG,
+                            "code" => "Exception"
+                        );
+                    }
+
+                    // Added in v0.2.6
+                    if ( self::sys()->caching_available == true )
+                    {
+                        $result['exc'] = $stored_exception_path;
+                    }
+
+                    // dump the error message
+                    self::dump_ajax_error( $result );
+                    die();
+                }
+
+                // Added in v0.2.6
+                if ( self::sys()->caching_available == true && isset( $_SESSION['tinyadmin_is_logged_in'] ) && $_SESSION['tinyadmin_is_logged_in'] == true )
+                {
+                    // This way exceptions may be reviewed at a later time.
+                    header( 'Location: ' . $stored_exception_path );
+                } else {
+                    // We don't store, so do a raw dump.
+                    echo $exception_html;
+                }
+                exit();
 
             }
             catch (Exception $e)
             {
+                // Flush any buffered output
+                // Added in 0.2.6
+                self::clean_all_ob_levels();
+
                 print get_class($e)." thrown within the exception handler. Message: ".$e->getMessage()." on line ".$e->getLine();
             }
         }
@@ -1235,7 +1353,8 @@ namespace tinyTpl
                             $arg0 = "<span style=\"color:#884;\">'$arg0'</span>";
 
                         } else {
-                            $arg0 = "'". $arg0 ."'";
+
+                            $arg0 = "'". var_export( $arg0, true ) ."'";
                         }
                     } else {
                         $type = "NONE";
@@ -1285,33 +1404,6 @@ namespace tinyTpl
             return $type;
         }
 
-        /*
-         *
-         * name: get_proper_header
-         *
-         * Returns neccessary header info for error response
-         * Added in v0.2.2
-         *
-         * @return string
-         *
-         */
-        public static function get_proper_header()
-        {
-            // FCGI Check for proper Header
-            if ( any_array_key_exists( array( "FCGI_ROLE","PHP_FCGI_CHILDREN","PHP_FCGI_MAX_REQUESTS" ), $_SERVER ) )
-            {
-                $header_prefix = "Status:";
-
-            } else if ( array_key_exists('SERVER_PROTOCOL', $_SERVER) ) {
-
-                $header_prefix = $_SERVER["SERVER_PROTOCOL"];
-
-            } else {
-
-                $header_prefix = "HTTP/1.0";
-            }
-            return $header_prefix;
-        }
 
         /*******************************************************************
          *                  Session Helper Functions
@@ -1410,6 +1502,108 @@ namespace tinyTpl
 
         /*
          *
+         * name: isAjax
+         *
+         * Determines if current request is ajax based
+         * Added in v0.2.6
+         *
+         * @return bool
+         *
+         */
+        public function isAjax()
+        {
+            // Sets flag if current request is ajax
+            return  (
+                        (
+                                isset( $_SERVER[ "X_REQUESTED_WITH" ] )
+                             && $_SERVER[ "X_REQUESTED_WITH" ] == "XMLHttpRequest"
+                        ) || (
+                                isset( $_SERVER[ "HTTP_X_REQUESTED_WITH" ] )
+                             && $_SERVER[ "HTTP_X_REQUESTED_WITH" ] == "XMLHttpRequest"
+                        )
+                    ) ? true : false;
+        }
+
+        /*
+         *
+         * name: return_404
+         *
+         * Returns a 404 page either from template or internal
+         * Added in v0.2.6
+         *
+         * @return bool
+         *
+         */
+        public function return_404()
+        {
+            // File is not readable and we're not in template mode - build the 404 filename
+            $TEMPLATE_FILENAME = $this->template_dir . $this->default_error_tpl_dir . $this->tpl404 . $this->tplExt;
+
+            $this->MASTER_TEMPLATE = null;
+
+            // Check if we have a valid 404 template
+            if ( is_readable ( $TEMPLATE_FILENAME  ) ) {
+
+                $this->read_template( $TEMPLATE_FILENAME );
+
+            } else {
+
+                $STR = "<html><head><title>404 - Not Found</title></head>"
+                    . '<body style="color:#888;background:#000;"><div style="width:960px;margin:0 auto;margin-top:2em;"><h1>Not Found</h2>'
+                    . "<p>The requested URL was not found on this server.";
+
+                if ( isset( $this->tpl404 ) && ! is_readable ( $TEMPLATE_FILENAME  ) )
+                {
+                    $STR .= " Additionally, a 404 Not Found error was encountered while trying to use an ErrorDocument to handle the request.";
+                }
+                $STR .= "</p>"
+                    . '<hr size=1><p style="text-align: center;">tinyTpl v'.self::VERSION."</p></div></body></html>";
+
+                $this->html = $STR;
+
+            }
+        }
+
+        public function get_fulldomain( $URI = false )
+        {
+
+            $P = $_SERVER['SERVER_PORT'];
+            return "http" . ( $P=="443" ? "s" : "") . "://" . 
+                          $_SERVER['SERVER_NAME'].
+                          ( ! preg_match( '_^(80:443)$_', $P ) ? ":".$P : "" ). 
+                          ( $URI == true ? $_SERVER['REQUEST_URI'] : "" );
+        }
+
+        /*
+         *
+         * name: get_proper_header
+         *
+         * Returns neccessary header info for error response
+         * Added in v0.2.2
+         *
+         * @return string
+         *
+         */
+        public static function get_proper_header()
+        {
+            // FCGI Check for proper Header
+            if ( any_array_key_exists( array( "FCGI_ROLE","PHP_FCGI_CHILDREN","PHP_FCGI_MAX_REQUESTS" ), $_SERVER ) )
+            {
+                $header_prefix = "Status:";
+
+            } else if ( array_key_exists('SERVER_PROTOCOL', $_SERVER) ) {
+
+                $header_prefix = $_SERVER["SERVER_PROTOCOL"];
+
+            } else {
+
+                $header_prefix = "HTTP/1.0";
+            }
+            return $header_prefix;
+        }
+
+        /*
+         *
          * name: formatDayHourMinuteSecond
          *
          * Formats microtime timestamp to a string
@@ -1448,6 +1642,24 @@ namespace tinyTpl
             $seconds = sprintf("%08.5f",$seconds);
 
             return array( $days,$hours,$minutes,$seconds );
+        }
+
+        /*
+         *
+         * name: clean_all_ob_levels
+         *
+         * Cleans all started output buffer levels for proper error displaying
+         * Added in v0.2.6
+         *
+         * @return
+         *
+         */
+        public static function clean_all_ob_levels()
+        {
+            for( $i = 0; $i < ob_get_level(); $i++ )
+            {
+                ob_end_clean();
+            }
         }
 
 
@@ -1518,7 +1730,7 @@ namespace tinyTpl
 **/
 namespace tinyTpl\hooks
 {
-    interface tinyObserver
+    interface tinyObserverInterface
     {
         /**
          *
@@ -1534,6 +1746,36 @@ namespace tinyTpl\hooks
          *
         **/
         public function trigger( $TINY, $STAGE, $TARGET );
+    }
+
+    /**
+     * This class was added to support autoinit features of hooks in an
+     * uninitialized cache folder. This way it may be prevented, that tiny
+     * throws an Error if a MongoClass exists, yet no mongoDb is running.
+     * 
+     * This affects all classes as they now have to extend this base
+     * Obeserver class, opposed to prior just implementing the interface.
+     *
+     * Added in tinyTpl 0.2.6
+    **/
+    abstract class tinyObserver implements tinyObserverInterface
+    {
+
+        const VERSION  = "0.1";
+
+        /**
+         * When writing own hooks, which might fail on
+         * initialization from an unitialized cache folder
+         * this constant should be overridden in the definition
+         * and set to false.
+         * see tinyMongoInit for sample usage.
+        **/
+        const AUTOINIT = true;
+
+        public function trigger( $TINY, $STAGE, $TARGET )
+        {
+            return false;
+        }
     }
 
 }
@@ -1683,7 +1925,7 @@ namespace
      *
      */
     function has_trigger_set( $TINY_TRIGGER = null ){
-        if ( is_array( tiny::sys()->template_trigger_collection )
+        if ( isset( tiny::sys()->template_trigger_collection ) && is_array( tiny::sys()->template_trigger_collection )
           && array_key_exists( $TINY_TRIGGER, tiny::sys()->template_trigger_collection )
         ) {
             return true;
@@ -1801,7 +2043,7 @@ namespace
             ${$key} = $options[ $key ];
         }
 
-        if ( ! is_dir( tiny::sys()->base . "/cache/" ) && ! is_writeable( tiny::sys()->base . "/cache/" ) )
+        if ( ! is_dir( tiny::sys()->base . "/cache" ) || ! is_writeable( tiny::sys()->base . "/cache" ) )
         {
             $use_cache = false;
         }
@@ -1847,7 +2089,11 @@ namespace
 
             $p = round(100-($l2/$l1*100),2);
 
-            $min = "/* $l1:$l2:$l3 ($p%) *"."/\r\n". $min;
+            // Changed in v0.2.6
+            // * u is uncompressed
+            // * c is compressed
+            // * d is the difference
+            $min = "/* u:$l1-c:$l2-d:$l3 ($p%) *"."/\r\n". $min;
         }
 
         // Cache versions, but only if we are not serving json
@@ -1887,14 +2133,16 @@ namespace
             $options = $defaults;
         }
 
-        if ( ! is_dir( tiny::sys()->base . "/cache/" ) && ! is_writeable( tiny::sys()->base . "/cache/" ) )
-        {
-            $use_cache = false;
-        }
-
         foreach( $defaults as $key => $value )
         {
             ${$key} = $options[ $key ];
+        }
+
+        // Fixed order of caching checks - makes more sense now 
+        // Changed in 0.2.6
+        if ( ! is_dir( tiny::sys()->base . "/cache" ) || ! is_writeable( tiny::sys()->base . "/cache" ) )
+        {
+            $use_cache = false;
         }
 
         if ( $use_cache == true )
@@ -1923,7 +2171,11 @@ namespace
 
             $p = round(100-($l2/$l1*100),2);
 
-            $min = "/* $l1:$l2:$l3 ($p%) *"."/\r\n". $min;
+            // Changed in v0.2.6
+            // * u is uncompressed
+            // * c is compressed
+            // * d is the difference
+            $min = "/* u:$l1-c:$l2-d:$l3 ($p%) *"."/\r\n". $min;
         }
 
         if ( $use_cache == true )

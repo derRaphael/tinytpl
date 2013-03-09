@@ -1,5 +1,6 @@
 <?php
     $functions = array(
+        "Go Home" => array( "go-home-4.png", "../" ),
         "Show Stats" => array( "office-chart-area-stacked.png", "stats" ),
         "Manage Cache" => array( "edit-delete-3.png", "admin/cache" ),
         "Check Sanity" => array( "mail-mark-task.png", "admin/checks" ),
@@ -10,10 +11,16 @@
 ?>
 <div>
 <?php foreach( $functions as $title => $data ): ?>
-<div style="float:left;width: 150px; heigth: 160px; background: rgba(128,128,160,.25); border: 1px solid #666; padding: 10px; margin: .5em;">
+<div class="tinyadmin-default-box" style="">
     <a href="/tinyAdmin/<?=$data[1]?>"><img src="/tinyAdmin/special/img/128/<?=$data[0]?>" style="width: 128px; height: 128px; margin: 10px 11px; "/></a>
-    <div style="border: 1px solid #888; background: #ccc; text-align: center;margin-top:10px;"><a href="/tinyAdmin/<?=$data[1]?>" style="color:#222;"><?=$title?></a></div>
+    <div class="tinyadmin-default-box-text" style=""><a href="/tinyAdmin/<?=$data[1]?>" style="color:#222;"><?=$title?></a></div>
 </div>
 <?php endforeach; ?>
+<?php if ( $this->caching_available == true ): ?>
+<div class="tinyadmin-default-box" style="">
+    <a href="/tinyAdmin/admin/exception/list"><img src="/tinyAdmin/special/img/128/document-close-4.png" style="width: 128px; height: 128px; margin: 10px 11px; "/></a>
+    <div class="tinyadmin-default-box-text" style=""><a href="/tinyAdmin/admin/exception/list" style="color:#222;">View Exceptions</a></div>
+</div>
+<?php endif; ?>
 </div>
 <div class="clearfix"></div>

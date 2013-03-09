@@ -3,7 +3,7 @@
 ?>
 <h2>Manage Cache</h2>
 
-<?php if( ! is_dir( $this->base . "/cache/" ) ): ?>
+<?php if ( $this->caching_available == false  ): ?>
 
 <p>This module shows some very basic usage statistics</p>
 

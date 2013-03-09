@@ -1,5 +1,5 @@
         <div class="small-info bottom">
-            <div class="left">tinyTpl <?=self::VERSION;?></div>
+            <div class="left"><a style="color:#123;font-weight:bold;" href="https://github.com/derRaphael/tinytpl">tinyTpl <?=self::VERSION;?></a></div>
             <div class="right">Html5Boilerplate 4</div>
             <div class="right">jQuery <span class="jq-version"></span></div>
             <div class="right">jQuery UI <span class="jq-ui-version"></span></div>
