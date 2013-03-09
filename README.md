@@ -5,7 +5,7 @@
 tinyTpl is a small, robust and reliable templating engine for php5. It's
 published under the 3-clause-BSD licence.
 
-Current stable version is 0.2.5
+Current stable version is 0.2.6
 
 * * *
 
