@@ -101,6 +101,23 @@ won't see your private notes for a page.
 Changelog
 =========
 
+v0-2-6
+------
+* Fixed annoying bug in tinyLinkBeau to work properly with fragments and get-parameters.
+* Added capability to be run directly from php5.4's webserver, 
+* Minor Fixups in tinyAdmin, 
+* changed hook behaviour, 
+* renamed observer interface and added new observer sbtract class.
+* Also update of documentation
+* Fixed changelog format
+* Using Version 4.1 of h5bp, update jQuery to 1.9, 
+* renamed /lib/misc to /lib/vendor and updated checks
+* Fixed error demo's nonexistent page
+* Fixed partial output dump on internal errors
+* Changed look and feel to be a bit less dark and a bit more friendly,
+* added new buttons,
+* If possible, all exceptions will be now stored for latter review
+
 v0-2-5
 ------
 * Fixed bug in non-existent template handling
