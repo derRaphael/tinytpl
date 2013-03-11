@@ -88,9 +88,10 @@ if [[ "$PHP" == "FAIL" ]]; then
 fi
 
 # Ok, we came here - start the fun.
+echo
 echo "Starting the PHP's builtin webserver. We'll be listening at port 8080."
-echo "Connect your Prowser to http://localhost:8080/ to start viewing tinyTpl."
+echo "Connect your Browser to http://localhost:8080/ to start viewing tinyTpl."
 echo "Enjoy!"
-
+echo
 $PHP_BIN -S localhost:8080 -t web web/index.php
 
