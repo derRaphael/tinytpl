@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #  startwebserver.sh
-#  v0.1
+#  v0.2
 #
 #  Copyright 2013 derRaphael <software@itholic.org>
 #
@@ -37,61 +37,178 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Some basic Variables
 # Check for proper directory
 CWD=$(pwd)
-
-if [ "${CWD##*/}" == "bin" ]; then
-    echo
-    echo "  Error."
-    echo "  This script must be from tiny's basefolder." 1>&2
-    echo
-    exit 1
-fi
-
-# Ok, we're not in bin folder. Check for other folder existence.
-if [ ! -d "$CWD/tpl" -o ! -d "$CWD/web" -o ! -d "$CWD/lib" -o ! -f "$CWD/web/index.php"  ]; then
-    echo
-    echo "  Error."
-    echo "  Some core folder of tinyTpl are missing."
-    echo "  This script requires the following folder and files to exist:"
-    echo
-    if [ ! -d "$CWD/lib" ]; then
-        echo "   - $CWD/lib"
-    fi;
-    if [ ! -d "$CWD/tpl" ]; then
-        echo "   - $CWD/tpl"
-    fi;
-    if [ ! -d "$CWD/web" ]; then
-        echo "   - $CWD/web"
-    fi;
-    if [ ! -f "$CWD/web/index.php" ]; then
-        echo "   - $CWD/web/index.php"
-    fi;
-    echo
-    echo "  Please make sure you have a valid copy of tinyTpl."
-    echo
-    exit 1
-fi
-
-# Since we didnt exit yet, all must be fine
-#Check php version, as only php5.4 or younger is able to act as a local webserver
 PHP_BIN=$(which php)
-if [ -z $PHP_BIN ]; then
-	echo "Sorry, No PHP Found. Aborting."
-	exit 1
-fi
+HOST="0.0.0.0"
+PORT="8080"
 
-PHP=$($PHP_BIN -r 'echo (version_compare(PHP_VERSION, "5.4.0", "<")) ? "FAIL" : "OK";')
-if [[ "$PHP" == "FAIL" ]]; then
-	echo "Sorry, you have PHP, but it doesn't have a builtin webserver. Aborting."
-    exit 1
-fi
+usage()
+{
+    echo
+    echo " Usage:"
+    echo 
+    echo "   $0 [-h][-p PORT][-l HOST]"
+    echo
+    echo -e "\t-p PORT         A Port to listen to. Default 8080"
+    echo -e "\t                For Ports below 1024 You need to be root"
+    echo -e "\t-l HOST         Set the HOST to a your FQDN, Localhost or"
+    echo -e "\t                an numeric IP. Defaults to 0.0.0.0"
+    echo -e "\t-h              This screen"
+    echo
+    exit 0
+}
 
-# Ok, we came here - start the fun.
-echo
-echo "Starting the PHP's builtin webserver. We'll be listening at port 8080."
-echo "Connect your Browser to http://localhost:8080/ to start viewing tinyTpl."
-echo "Enjoy!"
-echo
-$PHP_BIN -S localhost:8080 -t web web/index.php
+check_working_dir()
+{
+    if [ "${CWD##*/}" == "bin" ]; then
+        echo
+        echo "  Error."
+        echo "  This script must be from tiny's basefolder." 1>&2
+        echo
+        exit 1
+    fi
+}
+
+check_tiny_folder()
+{
+    # Check for other folder existence.
+    if [ ! -d "$CWD/tpl" -o ! -d "$CWD/web" -o ! -d "$CWD/lib" -o ! -f "$CWD/web/index.php"  ]; then
+        echo
+        echo "  Error."
+        echo "  Some core folder of tinyTpl are missing."
+        echo "  This script requires the following folder and files to exist:"
+        echo
+        if [ ! -d "$CWD/lib" ]; then
+            echo "   - $CWD/lib"
+        fi;
+        if [ ! -d "$CWD/tpl" ]; then
+            echo "   - $CWD/tpl"
+        fi;
+        if [ ! -d "$CWD/web" ]; then
+            echo "   - $CWD/web"
+        fi;
+        if [ ! -f "$CWD/web/index.php" ]; then
+            echo "   - $CWD/web/index.php"
+        fi;
+        echo
+        echo "  Please make sure you have a valid copy of tinyTpl."
+        echo
+        exit 1
+    fi
+}
+
+check_php_binary()
+{
+    #Check for php binary
+    if [ -z $PHP_BIN ]; then
+        echo 
+        echo "  Error."
+        echo "  Sorry, No PHP-CLI found. Aborting."
+        echo
+        exit 1
+    fi
+}
+
+check_php_version()
+{
+    PHP=$($PHP_BIN -r 'echo (version_compare(PHP_VERSION, "5.4.0", "<")) ? "FAIL" : "OK";')
+    if [[ "$PHP" == "FAIL" ]]; then
+        echo
+        echo "  Error."
+        echo "  Sorry, you have PHP, but it doesn't have a builtin webserver. Aborting."
+        echo
+        exit 1
+    fi
+}
+
+check_args()
+{
+    # check for bash parameter
+    while getopts "p:l:h" options; do
+        case $options in
+
+            p)  # check various port options
+                if [ ! -z "${OPTARG##*[!0-9]*}" ]; then
+                    if [ $OPTARG -lt 1024 ]; then
+                        if [ "$(id -u)" != "0" ]; then
+                            echo
+                            echo "  Error."
+                            echo "  You must be root to set a low port. Aborting."
+                            echo 
+                            exit 1
+                        fi
+                        PORT=$OPTARG
+                    elif [[ $OPTARG -gt 1023 && $OPTARG -lt 65536 ]]; then
+                        PORT=$OPTARG
+                    else
+                        echo
+                        echo "  Error."
+                        echo "  Invalid PORT specified. Aborting."
+                        echo
+                        exit 1
+                    fi
+                else 
+                    echo
+                    echo "  Error."
+                    echo "  PORT must be a Number. Aborting."
+                    echo 
+                    exit 1
+                fi
+                ;;
+
+            l)  # check that hostname is valid
+                if [ "$(ping -q -c1 $OPTARG)" ]; then
+                    HOST="$OPTARG"
+                else
+                    echo 
+                    echo "  Error."
+                    echo "  Invalid Host '$OPTARG' specified. Aborting."
+                    echo
+                    exit 1
+                fi
+                ;;
+
+            h)  # Show usage and exit
+                usage
+                ;;
+
+            \?) # Unknown Parameter Handling
+                echo 
+                echo "  Error."
+                echo "  Unknown parameter. Aborting."
+                echo
+                usage
+                ;;
+        esac
+    done
+}
+
+main()
+{
+    check_working_dir
+    check_tiny_folder
+    check_php_binary
+    check_php_version
+
+    check_args $@
+
+    # Ok, we came here - start the fun.
+    echo
+    echo "  Starting the PHP's builtin webserver. We'll be listening at port 8080."
+    echo "  Connect your Browser to http://$HOST:$PORT/ to start viewing tinyTpl."
+    echo "  Enjoy!"
+    echo
+    $PHP_BIN -S $HOST:$PORT -t web web/index.php
+    exit 0
+}
+
+main $@
+
+exit 0
+
+
+
+
 
