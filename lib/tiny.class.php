@@ -663,7 +663,11 @@ namespace tinyTpl
                 {
                     $this->placeholder_dir = '';
                 }
-                $MASTER_TEMPLATE_FILENAME = $this->MASTER_TEMPLATE;
+
+                // Reset to correct master template in order to correct view tinyAdmin page
+                // Fixed in pre v0.2.7
+                $MASTER_TEMPLATE_FILENAME = self::MASTER_TEMPLATE;
+                $this->MASTER_TEMPLATE = self::MASTER_TEMPLATE;
 
             } else {
                 $this->placeholder_dir = '';
