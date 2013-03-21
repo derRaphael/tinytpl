@@ -25,7 +25,7 @@
         div.box a { color: #f80;  }
         div.footer { position: absolute; bottom: .5em; height: 1.5em; text-align: center; width: auto; left: 0; right: 0; font-size: 0.8em; }
         div.footer a:link, div.footer a:active, div.footer a:visited { text-decoration: none; color: #888; }
-        div.footer a:hover { text-decoration: udnerline; color: #123; }
+        div.footer a:hover { text-decoration: underline; color: #123; }
         /* Added Clearfix */
         .clearfix:after { content: "."; display: block; clear: both; visibility: hidden; line-height: 0; height: 0; }
         .clearfix { display: inline-block; }

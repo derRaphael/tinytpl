@@ -5,7 +5,7 @@
 tinyTpl is a small, robust and reliable templating engine for php5. It's
 published under the 3-clause-BSD licence.
 
-Current stable version is 0.2.6
+Current stable version is 0.2.7
 
 * * *
 
@@ -100,6 +100,11 @@ won't see your private notes for a page.
 
 Changelog
 =========
+
+v0-2-7
+------
+* Smaller bugfixes, fixed tinyAdmin template selection
+* Fixed spelling error in error_tpl's css
 
 v0-2-6
 ------

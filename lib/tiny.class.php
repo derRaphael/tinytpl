@@ -4,7 +4,7 @@
  *
  * Copyright 2013 derRaphael <software@itholic.org>
  *
- * Version 0.2.6
+ * Version 0.2.7
  *
  * Tiny aims to be a small fast and reliable templating engine.
  *
@@ -125,7 +125,7 @@ namespace tinyTpl
         /*
          * Class Constants
          */
-        const VERSION = "0.2.6";
+        const VERSION = "0.2.7";
 
         // Standard Master Template
         const MASTER_TEMPLATE = "master_tpl";
@@ -608,14 +608,32 @@ namespace tinyTpl
                 $MASTER_TEMPLATE = self::MASTER_TEMPLATE;
             }
 
-            // Set new global template
+            /**
+             * Set new global template
+             *
+             * The global master template may be overriden from any template, simply
+             * by setting a 
+             * 
+             *        $this->MASTER_TEMPLATE = "someother_template";
+             *
+             * This works, because the master template is always rendered as the last 
+             * template in execution order.
+             * 
+             */
             $this->MASTER_TEMPLATE = $MASTER_TEMPLATE;
-            $MASTER_TEMPLATE_FILENAME = $this->default_master_tpl_dir . $this->MASTER_TEMPLATE;
 
+            /**
+             * To access tinyAdmin, devMode must be enabled and either it's called directly or
+             * the default master template file doesn't exist.
+             * If devMode is not set but the DEV_STATE_OVERRIDE is, we'll be able to access 
+             * tinyAdmin too.
+             */
             if ( ( $this->dev_state === "dev" || self::DEV_STATE_OVERRIDE === $this->dev_state_override ) &&
-                ( ! file_exists( $this->template_dir . $MASTER_TEMPLATE_FILENAME . $this->tplExt )
+                ( ! file_exists( $this->template_dir . $this->default_master_tpl_dir . $this->MASTER_TEMPLATE . $this->tplExt )
                 || $this->args[0] == "tinyAdmin" )
             ) {
+
+                // Redirect to some nice looking and better memorizable URL.
                 if ( $this->args[0] != "tinyAdmin" )
                 {
                     header('Location: /tinyAdmin/default.html');
@@ -624,12 +642,15 @@ namespace tinyTpl
 
                 if ( $this->args[0] == "tinyAdmin" )
                 {
+                    // Purge tinyAdmin from argument list.
                     array_shift( $this->args );
+
                     if ( count($this->args) == 0 )
                     {
                         $this->args[0] = "default";
                     }
-                    // Override set defaults
+
+                    // Override any set defaults, as these might break vanilla tinyAdmin
                     $defaults = array(
                         "tplExt" => ".php",
                         "tpl404" => "404",
@@ -637,7 +658,7 @@ namespace tinyTpl
                         "tplXXX" => "xxx",
                         "default_tpl_logic_dir" => "/tplLogic/",
                         /**
-                         * Set default master template dir.
+                         * Set default master template folder.
                          *
                          * Fixed in 0.2.6
                         **/
@@ -658,15 +679,15 @@ namespace tinyTpl
 
                 $this->placeholder_dir = 'config_tpl/';
 
-                // reset placeholder directory if it is non existent
+                // reset placeholder directory if it is non existent to avoid rendering
+                // errors or a 404 page.
                 if ( ! is_dir( $this->template_dir . $this->placeholder_dir ) )
                 {
                     $this->placeholder_dir = '';
                 }
 
                 // Reset to correct master template in order to correct view tinyAdmin page
-                // Fixed in pre v0.2.7
-                $MASTER_TEMPLATE_FILENAME = self::MASTER_TEMPLATE;
+                // Changed in v0.2.7
                 $this->MASTER_TEMPLATE = self::MASTER_TEMPLATE;
 
             } else {
@@ -678,8 +699,24 @@ namespace tinyTpl
 
             if ( $this->MASTER_TEMPLATE != null )
             {
-                // Set new Action & render MASTERTEMPLATE
-                $this->action = $MASTER_TEMPLATE_FILENAME;
+                /**
+                 * Changed in 0.2.7
+                 *
+                 * Unless we're in tinyAdmin mode,  the MASTER_TEMPLATE will always be
+                 * looked up as the last possible template. Since tinyTpl is organized as
+                 * a singleton object, any used template from within the call order may
+                 * reset the master template.
+                 * 
+                 * The if-then below has been introduces in order to respect tinyAdminmode 
+                 * and set its master template, as this is treated special.
+                 */
+                if ( $this->placeholder_dir != "" )
+                {
+                    $this->action = $this->MASTER_TEMPLATE;
+                } else {
+                    $this->action = $this->default_master_tpl_dir . $this->MASTER_TEMPLATE;
+                }
+
                 $TINY_TEMPLATE = $this->render_template( null, null )->html;
 
             } else {
@@ -695,7 +732,7 @@ namespace tinyTpl
 
             $this->notify_observer( __METHOD__, 255 );
 
-            return $this; //->html;
+            return $this;
         }
 
         /*
