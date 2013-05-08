@@ -41,7 +41,7 @@
  * exists, default values will be used.
  *
 **/
-namespace tinyTpl
+namespace lib\tinyTpl
 {
     class config
     {
@@ -58,8 +58,8 @@ namespace
      *
      * name: premature_shutdown
      *
-     * This function handles core errors which might prevent tinyTpl from proper working
-     * eg errror in tiny's class itself
+     * This function handles core errors which might prevent tinyTpl from 
+     * proper working eg errors in tiny's class itself
      *
      * Added in v0.2.6
      *
@@ -72,54 +72,94 @@ namespace
 
         $own_arguments = func_get_args();
 
-        if ( is_array( $own_arguments ) && isset( $own_arguments[0] ) && $own_arguments[0] == "disable" )
-        {
+        if ( is_array( $own_arguments ) 
+            && isset( $own_arguments[0] ) 
+            && $own_arguments[0] == "disable" 
+        ) {
             $disabled = true;
         }
 
         $error = error_get_last();
 
-        if ( $error !== null && ( $disabled == false || ! class_exists( '\tinyTpl\tiny' ) || ! is_object( \tinyTpl\tiny::sys() ) ) )
-        {
-            $MSG = preg_replace( '/\s*?\[<.*?>\]\:/', ':<br/>', $error['message'] ) . "</b>";
+        if ( $error !== null 
+            && ( 
+                $disabled == false 
+                || ! class_exists( '\lib\tinyTpl\tiny' ) 
+                || ! is_object( \lib\tinyTpl\tiny::sys() ) 
+            ) 
+        ) {
+            $MSG = preg_replace( 
+                    '/\s*?\[<.*?>\]\:/', ':<br/>', 
+                    $error['message'] 
+                ) . "</b>";
             $FILE = basename( $error['file'] );
             $LINE = $error['line'];
-            $RES =  "<h3>Unrecoverable Code Error (pre)</h3>".
+            $RES =  "<h3>Unrecoverable Code Error</h3>".
                     "<p>$MSG</p>".
                     "<p>File: <b>$FILE</b> in line <b>$LINE</b></p>";
 
-            preg_match( '_^<!doctype.*/html>_ims', file_get_contents( __FILE__ ), $HTML );
+            preg_match( 
+                '_^<!doctype.*/html>_ims', 
+                file_get_contents( __FILE__ ), 
+                $HTML 
+            );
             $SELF = $HTML[0];
 
-            if ( \tinyTpl\config::$dev_state == "dev" )
+            if ( \lib\tinyTpl\config::$dev_state == "dev" )
             {
                 $SELF = preg_replace( '_<!-- EXTRAINFO -->_', $RES, $SELF );
             }
             echo $SELF;
 
-            // If this function ever triggers, the exit makes sure, it won't be called twice or 
-            // another shutdown handler will be called.
+            // If this function ever triggers, the exit makes sure, it won't 
+            // be called twice or another shutdown handler will be called.
             exit();
         }
     }
 
     register_shutdown_function('premature_shutdown');
 
-    // This is only used, when tinyTpl is running directly from php's build in webserver
+
+
+    // Kick in Standard PHP Library autoloader
+    // Extended to respect tiny's folderStructure
+    set_include_path( 
+        join( 
+            PATH_SEPARATOR, 
+            array(
+                dirname( $_SERVER["DOCUMENT_ROOT"] ),
+                get_include_path() 
+            )
+        )
+    );
+
+    // die( get_include_path() );
+    spl_autoload_extensions(".php");
+    spl_autoload_register();
+
+    // This is only used, when tinyTpl is running directly from php's >= 5.4
+    // build in webserver
     // Added in tinyTpl v0.2.6
-    if ( php_sapi_name() == "cli-server" && preg_match( '_^/assets/_', $_SERVER['REQUEST_URI'] ) )
-    {
+    if ( php_sapi_name() == "cli-server" 
+        && preg_match( '_^/assets/_', $_SERVER['REQUEST_URI'] ) 
+    ) {
         // deliver content from assets folder immediately
         return false;
     }
 
     // The if below allows tinyTpl to show detailed exception information,
     // but only when in development state
-    if ( !isset( \tinyTpl\config::$dev_state ) || \tinyTpl\config::$dev_state == "dev" )
-    {
+    if ( !isset( \lib\tinyTpl\config::$dev_state ) 
+        || \lib\tinyTpl\config::$dev_state == "dev" 
+    ) {
 
-        // That's all it takes. Just invoke the main tinyTpl class - fairly simple.
-        require_once( dirname( $_SERVER["DOCUMENT_ROOT"] ) . "/lib/tiny.class.php" );
+        // That's all it takes. Just invoke the main tinyTpl class - 
+        // fairly simple.
+        // require_once( 
+        //     dirname( $_SERVER["DOCUMENT_ROOT"] ) . 
+        //     "/lib/tinyTpl/tiny.php" 
+        // );
+        \lib\tinyTpl\tiny::sys()->noop();
 
         // dump the result based on given master_tpl
         ob_start();
@@ -137,8 +177,12 @@ namespace
 
         try {
 
-            // That's all it takes. Just invoke the main tinyTpl class - fairly simple.
-            require_once( dirname( $_SERVER["DOCUMENT_ROOT"] ) . "/lib/tiny.class.php" );
+            // That's all it takes. Just invoke the main tinyTpl class - 
+            // fairly simple.
+            require_once( 
+                dirname( $_SERVER["DOCUMENT_ROOT"] ) . 
+                "/lib/tinyTpl/tiny.php" 
+            );
 
             // dump the result based on given master_tpl
             ob_start();
@@ -154,11 +198,20 @@ namespace
         } catch ( Exception $e ) {
 
             // FCGI Check for proper Header
-            if ( any_array_key_exists( array( "FCGI_ROLE","PHP_FCGI_CHILDREN","PHP_FCGI_MAX_REQUESTS" ), $_SERVER ) )
-            {
+            if ( any_array_key_exists( 
+                    array( 
+                        "FCGI_ROLE",
+                        "PHP_FCGI_CHILDREN",
+                        "PHP_FCGI_MAX_REQUESTS" 
+                    ), 
+                    $_SERVER 
+                ) 
+            ) {
                 $header_prefix = "Status:";
 
-            } else if ( array_key_exists('SERVER_PROTOCOL', $_SERVER) ) {
+            } else 
+
+            if ( array_key_exists('SERVER_PROTOCOL', $_SERVER) ) {
 
                 $header_prefix = $_SERVER["SERVER_PROTOCOL"];
 
@@ -166,11 +219,14 @@ namespace
 
                 $header_prefix = "HTTP/1.0";
             }
-            header( $header_prefix . " 500 Internal Server Error.", true, 500 );
+            header( $header_prefix . 
+                " 500 Internal Server Error.", true, 500 );
 
             /*
-             * Dump a friendly error page, since we have an 500 Internal Server Error.
-             * It's hardcoded in here, for the case that everything else fails.
+             * Dump a friendly error page, since we have an 500 Internal 
+             * Server Error.
+             * It's hardcoded in here, for the case that everything 
+             * else fails.
              */
 ?>
 <!doctype html>
@@ -184,19 +240,29 @@ namespace
 	<title>Internal Server Error</title>
     <style type="text/css">
         html,body { margin:0;padding:0;height:100%; font-size: 14px; }
-        body { background: #efefef; font-size: 1.1em; font-family: serif; color: #888; }
+        body { 
+            background: #efefef; font-size: 1.1em; font-family: serif; 
+            color: #888; 
+        }
         div.container { min-height:100%;position:relative; }
-        div.bg { position:absolute; top: 0; left: 0; bottom: 0; right: 0; width: auto; height: auto;
-            overflow: hidden; }
-        div.bg div { position: absolute; bottom: -30%; right: 0; font-size: 45em; letter-spacing: -.09em;
-            font-weight:bold; color: #222; color: rgba(0,0,0,.25); 
-            text-shadow: 0 2px 0 #aaa, 0 -2px 0 #aaa, 2px 0 0 #aaa, -2px 0 0 #aaa; color:#efefef;        }
-        div.box { position: absolute; left: 1em; right: 1em; top: 1em; bottom: 1em; width: auto; height: auto;
-            background: rgba(255,255,255,.75); padding: 3em; margin: 3em; font-family: sans; border: 1px solid #aaa;
-            -webkit-border-radius: 2em; -moz-border-radius: 2em; border-radius: 2em; }
+        div.bg { position:absolute; top: 0; left: 0; bottom: 0; right: 0; 
+            width: auto; height: auto; overflow: hidden; 
+        }
+        div.bg div { position: absolute; bottom: -30%; right: 0; 
+            font-size: 45em; letter-spacing: -.09em; font-weight:bold; 
+            color: #222; color: rgba(0,0,0,.25); text-shadow: 0 2px 0 #aaa, 
+            0 -2px 0 #aaa, 2px 0 0 #aaa, -2px 0 0 #aaa; color:#efefef; 
+        }
+        div.box { position: absolute; left: 1em; right: 1em; top: 1em; 
+            bottom: 1em; width: auto; height: auto; 
+            background: rgba(255,255,255,.75); padding: 3em; margin: 3em; 
+            font-family: sans; border: 1px solid #aaa;
+            -webkit-border-radius: 2em; -moz-border-radius: 2em; 
+            border-radius: 2em; 
+        }
         div.box h1 { color: #888; text-shadow: 0 0 .25em #bbb;  }
         div.box p { font-size: 1.2em; text-shadow: 0 0 1em #aaa; }
-        div.box hr { background: #444; color: #444; border: 0; height: 2px;  }
+        div.box hr { background: #444; color: #444; border: 0; height: 2px; }
         div.box a { color: #f80;  }
     </style>
 </head>
@@ -206,14 +272,19 @@ namespace
     <div class="box">
         <h1>There is an error here, sorry.</h1>
         <hr />
-        <p>You're seeing this page, because our server is currently expiriencing some difficulties.</p>
+        <p>
+            You're seeing this page, because our server is currently 
+            expiriencing some difficulties.
+        </p>
         <p>We apologise for any inconvenience.</p>
         <!-- EXTRAINFO -->
 <!--[if lt IE 8]>
         <hr />
         <p class=chromeframe>
-            Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade
-            to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">
+            Your browser is <em>ancient!</em> 
+            <a href="http://browsehappy.com/">Upgrade to a different 
+            browser</a> or 
+            <a href="http://www.google.com/chromeframe/?redirect=true">
             install Google Chrome Frame</a> to experience this site.
         </p>
 <![endif]-->

@@ -13,13 +13,13 @@
 
         header( 'Content-type: text/javascript; charset=utf-8', true );
 
-        if ( file_exists( "$fn/$hook.class.php" ) ) {
+        if ( file_exists( "$fn/$hook.php" ) ) {
 
-            $result = rename( "$fn/$hook.class.php", "$fn/$hook.class.php.available" );
+            $result = rename( "$fn/$hook.php", "$fn/$hook.php.available" );
 
-        } else if ( file_exists( "$fn/$hook.class.php.available" ) ) {
+        } else if ( file_exists( "$fn/$hook.php.available" ) ) {
 
-            $result = rename( "$fn/$hook.class.php.available", "$fn/$hook.class.php" );
+            $result = rename( "$fn/$hook.php.available", "$fn/$hook.php" );
         }
 
         if ( $result === true )
@@ -66,9 +66,9 @@
     }
 
     // Link all found hooks into the cache-hooks-available folder
-    $dir = new \RecursiveDirectoryIterator( $this->base . "/lib/hooks" );
-    $ite = new \RecursiveIteratorIterator($dir);
-    $reg = new \RegexIterator($ite, '/^.+\.php$/i', \RecursiveRegexIterator::GET_MATCH);
+    $dir = new \DirectoryIterator( $this->base . "/lib/tinytpl/hooks" );
+    $ite = new \IteratorIterator($dir);
+    $reg = new \RegexIterator($ite, '/^.+\.php$/i', \RegexIterator::GET_MATCH);
 
     foreach( $reg as $observerHook )
     {
@@ -81,7 +81,7 @@
             ! file_exists( $targetHooknameEnabled ) && ! is_link( $targetHooknameEnabled )
             && ! file_exists( $targetHooknameAvailable ) && ! is_link( $targetHooknameAvailable )
         ) {
-            symlink( $observerHook[0], $targetHooknameAvailable );
+            symlink( $this->base . "/lib/tinytpl/hooks/" . $observerHook[0], $targetHooknameAvailable );
             $info[] = "Found <code>$basename</code> and linked it in /cache/hooks";
         }
     }
@@ -100,17 +100,22 @@
 
 <?php
     // enlist all found hooks from /cache/hooks/available
-    $dir = new \RecursiveDirectoryIterator( $this->base . "/cache/hooks" );
-    $ite = new \RecursiveIteratorIterator($dir);
-    $reg = new \RegexIterator($ite, '/^.+\.php(\.available)?$/i', \RecursiveRegexIterator::GET_MATCH);
+    $dir = new \DirectoryIterator( $this->base . "/cache/hooks" );
+    $ite = new \IteratorIterator($dir);
+    $reg = new \RegexIterator($ite, '/^.+\.php(\.available)?$/i', \RegexIterator::GET_MATCH);
 
     $hooks = array();
 
     foreach( $reg as $observerHook )
     {
-        if ( file_exists( $observerHook[0] ) && is_readable( $observerHook[0] ) )
-        {
-            preg_match( '_(?<=/\*\* ABSTRACT:).*(?=\*\*/)_sm', file_get_contents( $observerHook[0] ), $match );
+        if ( file_exists( $this->base . "/cache/hooks/" . $observerHook[0] ) 
+            && is_readable( $this->base . "/cache/hooks/" . $observerHook[0] ) 
+        ) {
+            preg_match( 
+                '_(?<=/\*\* ABSTRACT:).*(?=\*\*/)_sm', 
+                file_get_contents( $this->base . "/cache/hooks/" . $observerHook[0] ), 
+                $match 
+            );
 
             $hooks[ basename( $observerHook[0] ) ] = array(
                 "info" => $match[0],
@@ -148,7 +153,7 @@
 
 <?php foreach($hooks as $hookName => $hookData):?>
 
-<?php $hookName = preg_replace('_\.class\.php(\.available)?$_','',$hookName); ?>
+<?php $hookName = preg_replace('_\.php(\.available)?$_','',$hookName); ?>
 
         <tr class="hook hook-<?=($hookData['enabled']==true?"en":"dis")?>abled hook-<?=$hookName?>" data-id="<?=$hookName?>">
             <th class="alpha" scope="row" rowspan="2"><?=$hookName?></th>
