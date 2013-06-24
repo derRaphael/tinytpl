@@ -41,7 +41,7 @@
  * exists, default values will be used.
  *
 **/
-namespace lib\tinyTpl
+namespace tinytpl
 {
     class config
     {
@@ -84,8 +84,8 @@ namespace
         if ( $error !== null 
             && ( 
                 $disabled == false 
-                || ! class_exists( '\lib\tinyTpl\tiny' ) 
-                || ! is_object( \lib\tinyTpl\tiny::sys() ) 
+                || ! class_exists( '\tinytpl\tiny' ) 
+                || ! is_object( \tinytpl\tiny::sys() ) 
             ) 
         ) {
             $MSG = preg_replace( 
@@ -105,7 +105,7 @@ namespace
             );
             $SELF = $HTML[0];
 
-            if ( \lib\tinyTpl\config::$dev_state == "dev" )
+            if ( \tinytpl\config::$dev_state == "dev" )
             {
                 $SELF = preg_replace( '_<!-- EXTRAINFO -->_', $RES, $SELF );
             }
@@ -127,7 +127,7 @@ namespace
         join( 
             PATH_SEPARATOR, 
             array(
-                dirname( $_SERVER["DOCUMENT_ROOT"] ),
+                dirname( $_SERVER["DOCUMENT_ROOT"] ) . "/lib",
                 get_include_path() 
             )
         )
@@ -149,8 +149,8 @@ namespace
 
     // The if below allows tinyTpl to show detailed exception information,
     // but only when in development state
-    if ( !isset( \lib\tinyTpl\config::$dev_state ) 
-        || \lib\tinyTpl\config::$dev_state == "dev" 
+    if ( !isset( \tinytpl\config::$dev_state ) 
+        || \tinytpl\config::$dev_state == "dev" 
     ) {
 
         // That's all it takes. Just invoke the main tinyTpl class - 
@@ -159,7 +159,7 @@ namespace
         //     dirname( $_SERVER["DOCUMENT_ROOT"] ) . 
         //     "/lib/tinyTpl/tiny.php" 
         // );
-        \lib\tinyTpl\tiny::sys()->noop();
+        \tinytpl\tiny::sys()->noop();
 
         // dump the result based on given master_tpl
         ob_start();

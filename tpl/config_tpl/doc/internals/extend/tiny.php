@@ -15,7 +15,7 @@
 <pre style="background: #4080ff; border: 1px solid #008;font-weight:bold;color:#eee;">
 
     &lt;?php
-        namespace tinyTpl
+        namespace lib\tinytpl
         {
             class config
             {

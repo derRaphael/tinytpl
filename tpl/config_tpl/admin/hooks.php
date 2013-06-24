@@ -110,13 +110,12 @@
     {
         if ( file_exists( $this->base . "/cache/hooks/" . $observerHook[0] ) 
             && is_readable( $this->base . "/cache/hooks/" . $observerHook[0] ) 
-        ) {
-            preg_match( 
+            && preg_match( 
                 '_(?<=/\*\* ABSTRACT:).*(?=\*\*/)_sm', 
                 file_get_contents( $this->base . "/cache/hooks/" . $observerHook[0] ), 
                 $match 
-            );
-
+            )
+        ) {
             $hooks[ basename( $observerHook[0] ) ] = array(
                 "info" => $match[0],
                 "enabled" => ( preg_match( '_\.php$_', basename( $observerHook[0] ) ) ? true : false )

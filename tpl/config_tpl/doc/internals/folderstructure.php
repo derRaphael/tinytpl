@@ -32,18 +32,9 @@
 </p>
 <h3>/lib</h3>
 <p>
-    <code>/lib</code> holds beside a collection of subfolder the main tiny class. Tiny's autoloader
-    will try including anything with <code>.class.php</code>-namepart found in here. All your
-    custom libraries belong either directly in here or in a subfolder locatedc in here.
-</p>
-<h3>/lib/hooks</h3>
-<p>
-    As name suggest, <code>/lib/hooks</code> contains the basic hooks for use with tinyTpl.
-</p>
-<h3>/lib/vendor</h3>
-<p>
-    <code>/lib/vendor</code> contains the javascript minifier library. This is a good place for
-    3rd party classes.
+    <code>/lib</code> holds beside a collection of subfolder which reflect the namespaces used in
+    any tiny project. The lib folder is added to standard search path from index.php which - as of v0.2.7 -
+    includes the spl_autoloader
 </p>
 <h3>/cache</h3>
 <p>
